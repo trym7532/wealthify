@@ -14,7 +14,200 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      budgets: {
+        Row: {
+          category: string
+          created_at: string | null
+          id: string
+          limit_amount: number
+          period: string | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          id?: string
+          limit_amount: number
+          period?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          id?: string
+          limit_amount?: number
+          period?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      financial_goals: {
+        Row: {
+          created_at: string | null
+          current_amount: number | null
+          goal_name: string
+          goal_type: string
+          id: string
+          priority: string | null
+          status: string | null
+          target_amount: number
+          target_date: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_amount?: number | null
+          goal_name: string
+          goal_type: string
+          id?: string
+          priority?: string | null
+          status?: string | null
+          target_amount: number
+          target_date?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_amount?: number | null
+          goal_name?: string
+          goal_type?: string
+          id?: string
+          priority?: string | null
+          status?: string | null
+          target_amount?: number
+          target_date?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      linked_accounts: {
+        Row: {
+          account_name: string
+          account_type: string
+          balance: number | null
+          created_at: string | null
+          currency: string | null
+          id: string
+          institution_name: string | null
+          is_active: boolean | null
+          last_synced_at: string | null
+          user_id: string
+        }
+        Insert: {
+          account_name: string
+          account_type: string
+          balance?: number | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          institution_name?: string | null
+          is_active?: boolean | null
+          last_synced_at?: string | null
+          user_id: string
+        }
+        Update: {
+          account_name?: string
+          account_type?: string
+          balance?: number | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          institution_name?: string | null
+          is_active?: boolean | null
+          last_synced_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ml_insights: {
+        Row: {
+          action_items: Json | null
+          confidence_score: number | null
+          description: string
+          generated_at: string | null
+          id: string
+          insight_type: string
+          is_read: boolean | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          action_items?: Json | null
+          confidence_score?: number | null
+          description: string
+          generated_at?: string | null
+          id?: string
+          insight_type: string
+          is_read?: boolean | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          action_items?: Json | null
+          confidence_score?: number | null
+          description?: string
+          generated_at?: string | null
+          id?: string
+          insight_type?: string
+          is_read?: boolean | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          account_id: string | null
+          amount: number
+          category: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_recurring: boolean | null
+          merchant_name: string | null
+          notes: string | null
+          subcategory: string | null
+          transaction_date: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          amount: number
+          category: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          merchant_name?: string | null
+          notes?: string | null
+          subcategory?: string | null
+          transaction_date?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          merchant_name?: string | null
+          notes?: string | null
+          subcategory?: string | null
+          transaction_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "linked_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

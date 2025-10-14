@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Wallet, LayoutDashboard, LogIn } from "lucide-react";
+import { Wallet, LayoutDashboard, LogIn, Sparkles } from "lucide-react";
 
 export default function Navbar() {
   return (
@@ -19,6 +19,13 @@ export default function Navbar() {
           >
             <LayoutDashboard className="w-4 h-4" />
             <span>Dashboard</span>
+          </Link>
+          <Link 
+            to="/hub" 
+            className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Hub</span>
           </Link>
           <Link 
             to="/login" 
