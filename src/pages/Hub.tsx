@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Landmark, Receipt, Target, Brain } from "lucide-react";
 import AccountsSection from "@/components/hub/AccountsSection";
@@ -11,8 +10,7 @@ export default function Hub() {
   const [activeTab, setActiveTab] = useState("accounts");
 
   return (
-    <Layout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Hub</h1>
@@ -58,7 +56,6 @@ export default function Hub() {
             <InsightsSection />
           </TabsContent>
         </Tabs>
-      </div>
-    </Layout>
+    </div>
   );
 }

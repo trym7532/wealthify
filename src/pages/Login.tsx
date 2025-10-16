@@ -1,31 +1,50 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import Layout from "../components/Layout";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Mail, Lock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if already logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate("/home");
+      }
+    });
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Demo login - integrate with Lovable Cloud for real auth
-    setTimeout(() => {
-      toast.success("Login successful! (Demo mode)");
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      toast.success("Login successful!");
+      navigate("/home");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to login");
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
-    <Layout>
-      <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           <div className="card-surface">
             <div className="text-center mb-8">
@@ -83,7 +102,6 @@ export default function Login() {
             </div>
           </div>
         </div>
-      </div>
-    </Layout>
+    </div>
   );
 }

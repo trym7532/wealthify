@@ -1,32 +1,57 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import Layout from "../components/Layout";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Mail, Lock, User } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [fullName, setFullName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if already logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate("/home");
+      }
+    });
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Demo registration - integrate with Lovable Cloud for real auth
-    setTimeout(() => {
-      toast.success("Account created! Please login to continue.");
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/home`,
+          data: {
+            full_name: fullName,
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success("Account created! You can now login.");
+      navigate("/login");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create account");
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
-    <Layout>
-      <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           <div className="card-surface">
             <div className="text-center mb-8">
@@ -43,8 +68,8 @@ export default function Register() {
                     id="name"
                     type="text"
                     placeholder="John Doe"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
                     className="pl-10 bg-background border-border/50 focus:border-primary"
                     required
                   />
@@ -100,7 +125,6 @@ export default function Register() {
             </div>
           </div>
         </div>
-      </div>
-    </Layout>
+    </div>
   );
 }
