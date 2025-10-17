@@ -23,9 +23,11 @@ export default function TransactionTable({ transactions }: TransactionTableProps
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-transactions'] });
       toast({
         title: "Transaction deleted",
-        description: "The transaction has been removed",
+        description: "The transaction has been removed and balances updated",
       });
     },
     onError: () => {
@@ -72,7 +74,10 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                 {tx.linked_accounts?.account_name || 'N/A'}
               </TableCell>
               <TableCell className="text-right font-semibold">
-                ${parseFloat(tx.amount).toFixed(2)}
+                <span className={parseFloat(tx.amount.toString()) >= 0 ? 'text-success' : 'text-foreground'}>
+                  {parseFloat(tx.amount.toString()) >= 0 ? '+' : '-'}
+                  ${Math.abs(parseFloat(tx.amount.toString())).toFixed(2)}
+                </span>
               </TableCell>
               <TableCell>
                 <Button

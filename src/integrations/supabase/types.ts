@@ -198,6 +198,7 @@ export type Database = {
           notes: string | null
           subcategory: string | null
           transaction_date: string
+          transaction_type: string | null
           user_id: string
         }
         Insert: {
@@ -212,6 +213,7 @@ export type Database = {
           notes?: string | null
           subcategory?: string | null
           transaction_date?: string
+          transaction_type?: string | null
           user_id: string
         }
         Update: {
@@ -226,6 +228,7 @@ export type Database = {
           notes?: string | null
           subcategory?: string | null
           transaction_date?: string
+          transaction_type?: string | null
           user_id?: string
         }
         Relationships: [

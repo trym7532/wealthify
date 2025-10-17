@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LayoutDashboard, Sparkles, Settings, UserCircle, LogOut, Plus } from "lucide-react";
+import { LayoutDashboard, Sparkles, Settings, UserCircle, LogOut, Plus, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import Dashboard from "./Dashboard";
 import Hub from "./Hub";
 import SettingsPage from "./Settings";
 import Profile from "./Profile";
+import Investments from "./Investments";
 import QuickActionWidget from "@/components/QuickActionWidget";
 
 export default function Home() {
@@ -77,7 +78,7 @@ export default function Home() {
 
       <div className="max-w-7xl mx-auto p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4">
+          <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-5">
             <TabsTrigger value="dashboard" className="gap-2">
               <LayoutDashboard className="w-4 h-4" />
               Dashboard
@@ -85,6 +86,10 @@ export default function Home() {
             <TabsTrigger value="hub" className="gap-2">
               <Sparkles className="w-4 h-4" />
               Hub
+            </TabsTrigger>
+            <TabsTrigger value="investments" className="gap-2">
+              <TrendingUp className="w-4 h-4" />
+              Investments
             </TabsTrigger>
             <TabsTrigger value="settings" className="gap-2">
               <Settings className="w-4 h-4" />
@@ -102,6 +107,10 @@ export default function Home() {
 
           <TabsContent value="hub">
             <Hub />
+          </TabsContent>
+
+          <TabsContent value="investments">
+            <Investments />
           </TabsContent>
 
           <TabsContent value="settings">

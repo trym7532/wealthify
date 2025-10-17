@@ -27,6 +27,7 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
     description: "",
     transaction_date: new Date().toISOString().split('T')[0],
     notes: "",
+    transaction_type: "debit" as "credit" | "debit",
   });
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -48,23 +49,51 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { error } = await supabase.from('transactions').insert({
+      const transactionAmount = data.transaction_type === 'credit' 
+        ? Math.abs(parseFloat(data.amount))
+        : -Math.abs(parseFloat(data.amount));
+
+      // Insert transaction
+      const { error: txError } = await supabase.from('transactions').insert({
         user_id: user.id,
         account_id: data.account_id || null,
-        amount: parseFloat(data.amount),
+        amount: transactionAmount,
+        transaction_type: data.transaction_type,
         category: data.category,
         description: data.description,
         transaction_date: data.transaction_date,
         notes: data.notes,
       });
       
-      if (error) throw error;
+      if (txError) throw txError;
+
+      // Update account balance if account is selected
+      if (data.account_id) {
+        const { data: account } = await supabase
+          .from('linked_accounts')
+          .select('balance')
+          .eq('id', data.account_id)
+          .single();
+
+        if (account) {
+          const newBalance = parseFloat(account.balance.toString()) + transactionAmount;
+          
+          const { error: updateError } = await supabase
+            .from('linked_accounts')
+            .update({ balance: newBalance })
+            .eq('id', data.account_id);
+
+          if (updateError) throw updateError;
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
       toast({
         title: "Transaction added",
-        description: "Your transaction has been recorded",
+        description: "Your transaction has been recorded and balances updated",
       });
       onOpenChange(false);
       setFormData({
@@ -74,6 +103,7 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
         description: "",
         transaction_date: new Date().toISOString().split('T')[0],
         notes: "",
+        transaction_type: "debit",
       });
     },
     onError: () => {
@@ -97,6 +127,22 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
           <DialogTitle>Add Transaction</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="transaction_type">Transaction Type</Label>
+            <Select 
+              value={formData.transaction_type} 
+              onValueChange={(value: "credit" | "debit") => setFormData({ ...formData, transaction_type: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="credit">Credit (Money In)</SelectItem>
+                <SelectItem value="debit">Debit (Money Out)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div>
             <Label htmlFor="amount">Amount</Label>
             <Input

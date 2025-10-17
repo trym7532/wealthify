@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Landmark, Receipt, Target, Brain, TrendingUp, Wallet } from "lucide-react";
+import { Landmark, Receipt, Target, Brain, Wallet } from "lucide-react";
 import AccountsSection from "@/components/hub/AccountsSection";
 import TransactionsSection from "@/components/hub/TransactionsSection";
 import GoalsSection from "@/components/hub/GoalsSection";
 import InsightsSection from "@/components/hub/InsightsSection";
 import BudgetsSection from "@/components/hub/BudgetsSection";
-import InvestmentsSection from "@/components/hub/InvestmentsSection";
 
 export default function Hub() {
   const [activeTab, setActiveTab] = useState("accounts");
@@ -23,7 +22,7 @@ export default function Hub() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-6 w-full">
+          <TabsList className="grid grid-cols-5 w-full">
             <TabsTrigger value="accounts" className="flex items-center gap-2">
               <Landmark className="w-4 h-4" />
               <span className="hidden sm:inline">Accounts</span>
@@ -39,10 +38,6 @@ export default function Hub() {
             <TabsTrigger value="budgets" className="flex items-center gap-2">
               <Wallet className="w-4 h-4" />
               <span className="hidden sm:inline">Budgets</span>
-            </TabsTrigger>
-            <TabsTrigger value="investments" className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" />
-              <span className="hidden sm:inline">Investments</span>
             </TabsTrigger>
             <TabsTrigger value="insights" className="flex items-center gap-2">
               <Brain className="w-4 h-4" />
@@ -64,10 +59,6 @@ export default function Hub() {
 
           <TabsContent value="budgets" className="space-y-4">
             <BudgetsSection />
-          </TabsContent>
-
-          <TabsContent value="investments" className="space-y-4">
-            <InvestmentsSection />
           </TabsContent>
 
           <TabsContent value="insights" className="space-y-4">

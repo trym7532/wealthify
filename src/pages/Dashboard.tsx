@@ -21,7 +21,8 @@ export default function Dashboard() {
         .select('*')
         .eq('user_id', user.id);
       return data || [];
-    }
+    },
+    refetchInterval: 5000, // Refetch every 5 seconds for real-time updates
   });
 
   const { data: transactions } = useQuery({
@@ -35,7 +36,8 @@ export default function Dashboard() {
         .eq('user_id', user.id)
         .order('transaction_date', { ascending: false });
       return data || [];
-    }
+    },
+    refetchInterval: 5000, // Refetch every 5 seconds for real-time updates
   });
 
   const { data: monthlyData } = useQuery({
