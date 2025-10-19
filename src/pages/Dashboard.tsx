@@ -3,7 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import ExpenseChart from "../components/ExpenseChart";
 import StatDetailDialog from "../components/dashboard/StatDetailDialog";
-import { TrendingUp, Wallet, PiggyBank, CreditCard } from "lucide-react";
+import OnboardingTutorial from "../components/OnboardingTutorial";
+import { TrendingUp, Wallet, PiggyBank, CreditCard, Target, DollarSign } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 export default function Dashboard() {
   const [detailDialog, setDetailDialog] = useState<{
@@ -68,6 +70,59 @@ export default function Dashboard() {
         .map(([month, amount]) => ({ month, amount }))
         .sort((a, b) => a.month.localeCompare(b.month));
     }
+  });
+
+  const { data: goals } = useQuery({
+    queryKey: ['dashboard-goals'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      const { data } = await supabase
+        .from('goals')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(3);
+      return data || [];
+    },
+  });
+
+  const { data: budgets } = useQuery({
+    queryKey: ['dashboard-budgets'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      const { data } = await supabase
+        .from('budgets')
+        .select('*')
+        .eq('user_id', user.id)
+        .limit(3);
+      return data || [];
+    },
+  });
+
+  const { data: budgetSpending } = useQuery({
+    queryKey: ['dashboard-budget-spending'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return {};
+      
+      const thisMonth = new Date().toISOString().substring(0, 7);
+      const { data } = await supabase
+        .from('transactions')
+        .select('category, amount')
+        .eq('user_id', user.id)
+        .gte('transaction_date', `${thisMonth}-01`)
+        .lt('amount', 0);
+
+      if (!data) return {};
+      
+      const spending: Record<string, number> = {};
+      data.forEach(tx => {
+        spending[tx.category] = (spending[tx.category] || 0) + Math.abs(parseFloat(tx.amount.toString()));
+      });
+      return spending;
+    },
   });
 
   // Calculate stats
@@ -150,7 +205,9 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-transition">
+        <OnboardingTutorial />
+        
         <div>
           <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
           <p className="text-muted-foreground">Track your spending, budgets, and financial insights</p>
@@ -159,58 +216,153 @@ export default function Dashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div 
-            className="card-surface cursor-pointer hover:shadow-xl transition-shadow"
+            className="stat-card group"
             onClick={() => setDetailDialog({ open: true, type: 'balance' })}
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-muted-foreground text-sm">Total Balance</span>
-              <Wallet className="w-4 h-4 text-primary" />
-            </div>
-            <div className="text-2xl font-bold">${totalBalance.toFixed(2)}</div>
-            <div className="text-xs text-muted-foreground mt-1">
-              {accounts?.length || 0} accounts
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-muted-foreground text-sm">Total Balance</span>
+                <Wallet className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+              </div>
+              <div className="text-2xl font-bold">${totalBalance.toFixed(2)}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {accounts?.length || 0} accounts
+              </div>
             </div>
           </div>
 
           <div 
-            className="card-surface cursor-pointer hover:shadow-xl transition-shadow"
+            className="stat-card group"
             onClick={() => setDetailDialog({ open: true, type: 'spend' })}
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-muted-foreground text-sm">Monthly Spend</span>
-              <CreditCard className="w-4 h-4 text-primary" />
-            </div>
-            <div className="text-2xl font-bold">${monthlySpend.toFixed(2)}</div>
-            <div className="text-xs text-muted-foreground mt-1">
-              {Object.keys(spendByCategory).length} categories
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-muted-foreground text-sm">Monthly Spend</span>
+                <CreditCard className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+              </div>
+              <div className="text-2xl font-bold">${monthlySpend.toFixed(2)}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {Object.keys(spendByCategory).length} categories
+              </div>
             </div>
           </div>
 
           <div 
-            className="card-surface cursor-pointer hover:shadow-xl transition-shadow"
+            className="stat-card group"
             onClick={() => setDetailDialog({ open: true, type: 'savings' })}
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-muted-foreground text-sm">Savings</span>
-              <PiggyBank className="w-4 h-4 text-primary" />
-            </div>
-            <div className="text-2xl font-bold">${totalSavings.toFixed(2)}</div>
-            <div className="text-xs text-muted-foreground mt-1">
-              {savingsAccounts.length} accounts
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-muted-foreground text-sm">Savings</span>
+                <PiggyBank className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+              </div>
+              <div className="text-2xl font-bold">${totalSavings.toFixed(2)}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {savingsAccounts.length} accounts
+              </div>
             </div>
           </div>
 
           <div 
-            className="card-surface cursor-pointer hover:shadow-xl transition-shadow"
+            className="stat-card group"
             onClick={() => setDetailDialog({ open: true, type: 'investments' })}
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-muted-foreground text-sm">Investments</span>
-              <TrendingUp className="w-4 h-4 text-primary" />
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-muted-foreground text-sm">Investments</span>
+                <TrendingUp className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+              </div>
+              <div className="text-2xl font-bold">${totalInvestments.toFixed(2)}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {investmentAccounts.length} accounts
+              </div>
             </div>
-            <div className="text-2xl font-bold">${totalInvestments.toFixed(2)}</div>
-            <div className="text-xs text-muted-foreground mt-1">
-              {investmentAccounts.length} accounts
+          </div>
+        </div>
+
+        {/* Goals & Budgets Overview */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Goals Section */}
+          <div className="card-surface">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Target className="w-5 h-5 text-primary" />
+                Active Goals
+              </h3>
+            </div>
+            <div className="space-y-4">
+              {goals && goals.length > 0 ? (
+                goals.map((goal) => {
+                  const progress = (parseFloat(goal.current_amount.toString()) / parseFloat(goal.target_amount.toString())) * 100;
+                  return (
+                    <div key={goal.id} className="p-4 bg-surface rounded-lg hover:bg-surface/80 transition-colors">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <div className="font-medium">{goal.goal_name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            ${parseFloat(goal.current_amount.toString()).toFixed(2)} of ${parseFloat(goal.target_amount.toString()).toFixed(2)}
+                          </div>
+                        </div>
+                        <div className="text-sm font-semibold text-primary">{progress.toFixed(0)}%</div>
+                      </div>
+                      <Progress value={progress} className="h-2" />
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-muted-foreground text-center py-4">No active goals</p>
+              )}
+            </div>
+          </div>
+
+          {/* Budgets Section */}
+          <div className="card-surface">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-primary" />
+                Budget Overview
+              </h3>
+            </div>
+            <div className="space-y-4">
+              {budgets && budgets.length > 0 ? (
+                budgets.map((budget) => {
+                  const spent = budgetSpending?.[budget.category] || 0;
+                  const limit = parseFloat(budget.limit_amount.toString());
+                  const progress = (spent / limit) * 100;
+                  const isOverBudget = spent > limit;
+                  
+                  return (
+                    <div 
+                      key={budget.id} 
+                      className={`p-4 rounded-lg transition-all ${
+                        isOverBudget 
+                          ? 'bg-destructive/10 border-2 border-destructive shadow-lg scale-105' 
+                          : 'bg-surface hover:bg-surface/80'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <div className="font-medium">{budget.category}</div>
+                          <div className="text-xs text-muted-foreground">
+                            ${spent.toFixed(2)} of ${limit.toFixed(2)}
+                          </div>
+                        </div>
+                        <div className={`text-sm font-semibold ${isOverBudget ? 'text-destructive' : 'text-primary'}`}>
+                          {progress.toFixed(0)}%
+                        </div>
+                      </div>
+                      <Progress value={Math.min(progress, 100)} className="h-2" />
+                      {isOverBudget && (
+                        <div className="text-xs text-destructive mt-2 font-medium">
+                          ⚠️ Over budget by ${(spent - limit).toFixed(2)}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-muted-foreground text-center py-4">No budgets set</p>
+              )}
             </div>
           </div>
         </div>

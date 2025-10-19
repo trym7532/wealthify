@@ -80,6 +80,42 @@ export type Database = {
         }
         Relationships: []
       }
+      goals: {
+        Row: {
+          category: string | null
+          created_at: string
+          current_amount: number | null
+          goal_name: string
+          id: string
+          target_amount: number
+          target_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          current_amount?: number | null
+          goal_name: string
+          id?: string
+          target_amount: number
+          target_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          current_amount?: number | null
+          goal_name?: string
+          id?: string
+          target_amount?: number
+          target_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       linked_accounts: {
         Row: {
           account_name: string
@@ -161,6 +197,7 @@ export type Database = {
           bio: string | null
           created_at: string
           full_name: string | null
+          has_seen_tutorial: boolean | null
           id: string
           phone: string | null
           updated_at: string
@@ -170,6 +207,7 @@ export type Database = {
           bio?: string | null
           created_at?: string
           full_name?: string | null
+          has_seen_tutorial?: boolean | null
           id: string
           phone?: string | null
           updated_at?: string
@@ -179,6 +217,7 @@ export type Database = {
           bio?: string | null
           created_at?: string
           full_name?: string | null
+          has_seen_tutorial?: boolean | null
           id?: string
           phone?: string | null
           updated_at?: string

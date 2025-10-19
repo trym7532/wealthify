@@ -56,6 +56,16 @@ export default function StatDetailDialog({
           }
         }
       }
+    },
+    onHover: (event: any, elements: any[]) => {
+      event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+    },
+    elements: {
+      arc: {
+        borderWidth: 3,
+        hoverBorderWidth: 5,
+        hoverOffset: 15
+      }
     }
   };
 
@@ -71,11 +81,20 @@ export default function StatDetailDialog({
           </div>
           <div className="space-y-2">
             {data.map((item, idx) => (
-              <div key={idx} className="flex justify-between items-center p-3 bg-surface rounded-lg">
+              <div 
+                key={idx} 
+                className="flex justify-between items-center p-3 bg-surface rounded-lg hover:bg-surface/80 transition-all hover:scale-105 cursor-pointer group"
+                style={{
+                  boxShadow: `0 0 20px ${item.color}20`,
+                }}
+              >
                 <div className="flex items-center gap-3">
                   <div 
-                    className="w-4 h-4 rounded" 
-                    style={{ backgroundColor: item.color }}
+                    className="w-4 h-4 rounded transition-all group-hover:scale-125 group-hover:shadow-lg" 
+                    style={{ 
+                      backgroundColor: item.color,
+                      boxShadow: `0 0 10px ${item.color}80`
+                    }}
                   />
                   <span className="font-medium">{item.label}</span>
                 </div>
