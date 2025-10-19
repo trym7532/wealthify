@@ -6,10 +6,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CreditCard, Target, DollarSign, Building2 } from "lucide-react";
+import { CreditCard, Target, DollarSign, Building2, TrendingUp, Wallet } from "lucide-react";
 import AddTransactionDialog from "./hub/AddTransactionDialog";
 import AddGoalDialog from "./hub/AddGoalDialog";
 import AddAccountDialog from "./hub/AddAccountDialog";
+import AddBudgetDialog from "./hub/AddBudgetDialog";
 
 interface QuickActionWidgetProps {
   open: boolean;
@@ -20,6 +21,8 @@ export default function QuickActionWidget({ open, onOpenChange }: QuickActionWid
   const [showTransactionDialog, setShowTransactionDialog] = useState(false);
   const [showGoalDialog, setShowGoalDialog] = useState(false);
   const [showAccountDialog, setShowAccountDialog] = useState(false);
+  const [showBudgetDialog, setShowBudgetDialog] = useState(false);
+  const [showInvestmentDialog, setShowInvestmentDialog] = useState(false);
 
   const actions = [
     {
@@ -39,6 +42,26 @@ export default function QuickActionWidget({ open, onOpenChange }: QuickActionWid
       description: "Set a new financial goal",
       onClick: () => {
         setShowGoalDialog(true);
+        onOpenChange(false);
+      },
+    },
+    {
+      id: "budget",
+      label: "Create Budget",
+      icon: Wallet,
+      description: "Set spending limits by category",
+      onClick: () => {
+        setShowBudgetDialog(true);
+        onOpenChange(false);
+      },
+    },
+    {
+      id: "investment",
+      label: "Add Investment",
+      icon: TrendingUp,
+      description: "Track your investment accounts",
+      onClick: () => {
+        setShowInvestmentDialog(true);
         onOpenChange(false);
       },
     },
@@ -91,9 +114,17 @@ export default function QuickActionWidget({ open, onOpenChange }: QuickActionWid
         open={showGoalDialog}
         onOpenChange={setShowGoalDialog}
       />
+      <AddBudgetDialog
+        open={showBudgetDialog}
+        onOpenChange={setShowBudgetDialog}
+      />
       <AddAccountDialog
         open={showAccountDialog}
         onOpenChange={setShowAccountDialog}
+      />
+      <AddAccountDialog
+        open={showInvestmentDialog}
+        onOpenChange={setShowInvestmentDialog}
       />
     </>
   );

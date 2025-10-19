@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import ExpenseChart from "../components/ExpenseChart";
 import StatDetailDialog from "../components/dashboard/StatDetailDialog";
 import OnboardingTutorial from "../components/OnboardingTutorial";
-import { TrendingUp, Wallet, PiggyBank, CreditCard, Target, DollarSign } from "lucide-react";
+import { TrendingUp, Wallet, PiggyBank, CreditCard, Target, DollarSign, Sparkles, TrendingDown, ArrowUpRight } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 export default function Dashboard() {
@@ -204,76 +204,118 @@ export default function Dashboard() {
     }
   };
 
+  const { data: profile } = useQuery({
+    queryKey: ['user-profile'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single();
+      return data;
+    },
+  });
+
+  const userName = profile?.full_name?.split(' ')[0] || 'there';
+
   return (
-    <div className="space-y-6 page-transition">
+    <div className="space-y-6 page-transition relative">
+        {/* Decorative background elements */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -z-10" />
+        <div className="absolute bottom-0 left-0 w-72 h-72 bg-accent/5 rounded-full blur-3xl -z-10" />
+        
         <OnboardingTutorial />
         
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-          <p className="text-muted-foreground">Track your spending, budgets, and financial insights</p>
+        <div className="relative">
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-3xl font-bold text-gradient">Hey {userName}!</h1>
+            <Sparkles className="w-6 h-6 text-primary animate-pulse" />
+          </div>
+          <p className="text-muted-foreground flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" />
+            Your financial dashboard at a glance
+          </p>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div 
-            className="stat-card group"
+            className="stat-card group relative overflow-hidden"
             onClick={() => setDetailDialog({ open: true, type: 'balance' })}
           >
+            <div className="absolute top-0 right-0 opacity-5">
+              <Wallet className="w-24 h-24" />
+            </div>
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-muted-foreground text-sm">Total Balance</span>
                 <Wallet className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-2xl font-bold">${totalBalance.toFixed(2)}</div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                <ArrowUpRight className="w-3 h-3" />
                 {accounts?.length || 0} accounts
               </div>
             </div>
           </div>
 
           <div 
-            className="stat-card group"
+            className="stat-card group relative overflow-hidden"
             onClick={() => setDetailDialog({ open: true, type: 'spend' })}
           >
+            <div className="absolute top-0 right-0 opacity-5">
+              <CreditCard className="w-24 h-24" />
+            </div>
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-muted-foreground text-sm">Monthly Spend</span>
                 <CreditCard className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-2xl font-bold">${monthlySpend.toFixed(2)}</div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                <TrendingDown className="w-3 h-3" />
                 {Object.keys(spendByCategory).length} categories
               </div>
             </div>
           </div>
 
           <div 
-            className="stat-card group"
+            className="stat-card group relative overflow-hidden"
             onClick={() => setDetailDialog({ open: true, type: 'savings' })}
           >
+            <div className="absolute top-0 right-0 opacity-5">
+              <PiggyBank className="w-24 h-24" />
+            </div>
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-muted-foreground text-sm">Savings</span>
                 <PiggyBank className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-2xl font-bold">${totalSavings.toFixed(2)}</div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                <ArrowUpRight className="w-3 h-3" />
                 {savingsAccounts.length} accounts
               </div>
             </div>
           </div>
 
           <div 
-            className="stat-card group"
+            className="stat-card group relative overflow-hidden"
             onClick={() => setDetailDialog({ open: true, type: 'investments' })}
           >
+            <div className="absolute top-0 right-0 opacity-5">
+              <TrendingUp className="w-24 h-24" />
+            </div>
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-muted-foreground text-sm">Investments</span>
                 <TrendingUp className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-2xl font-bold">${totalInvestments.toFixed(2)}</div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                <ArrowUpRight className="w-3 h-3" />
                 {investmentAccounts.length} accounts
               </div>
             </div>

@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Trash2, Target } from "lucide-react";
+import { Trash2, Target, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import EditGoalDialog from "./EditGoalDialog";
 
 interface GoalCardProps {
   goal: any;
@@ -13,6 +15,7 @@ interface GoalCardProps {
 export default function GoalCard({ goal }: GoalCardProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const progress = (parseFloat(goal.current_amount) / parseFloat(goal.target_amount)) * 100;
 
   const deleteMutation = useMutation({
@@ -49,21 +52,32 @@ export default function GoalCard({ goal }: GoalCardProps) {
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <Target className="w-4 h-4" />
-          {goal.goal_name}
-        </CardTitle>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => deleteMutation.mutate()}
-          className="h-8 w-8 text-muted-foreground hover:text-error"
-        >
-          <Trash2 className="w-4 h-4" />
-        </Button>
-      </CardHeader>
+    <>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Target className="w-4 h-4" />
+            {goal.goal_name}
+          </CardTitle>
+          <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowEditDialog(true)}
+              className="h-8 w-8 text-muted-foreground hover:text-primary"
+            >
+              <Edit className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => deleteMutation.mutate()}
+              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
@@ -97,5 +111,12 @@ export default function GoalCard({ goal }: GoalCardProps) {
         )}
       </CardContent>
     </Card>
+    
+    <EditGoalDialog
+      open={showEditDialog}
+      onOpenChange={setShowEditDialog}
+      goal={goal}
+    />
+    </>
   );
 }

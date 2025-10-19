@@ -2,19 +2,15 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Trash2, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
+import AddBudgetDialog from "./AddBudgetDialog";
+import EditBudgetDialog from "./EditBudgetDialog";
 
 export default function BudgetsSection() {
-  const [open, setOpen] = useState(false);
-  const [category, setCategory] = useState("");
-  const [limitAmount, setLimitAmount] = useState("");
-  const [period, setPeriod] = useState("monthly");
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingBudget, setEditingBudget] = useState<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -63,33 +59,6 @@ export default function BudgetsSection() {
     }
   });
 
-  const createMutation = useMutation({
-    mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
-      const { error } = await supabase.from('budgets').insert({
-        user_id: user.id,
-        category,
-        limit_amount: parseFloat(limitAmount),
-        period
-      });
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['budgets'] });
-      toast({ title: "Budget created successfully" });
-      setOpen(false);
-      setCategory("");
-      setLimitAmount("");
-      setPeriod("monthly");
-    },
-    onError: () => {
-      toast({ title: "Failed to create budget", variant: "destructive" });
-    }
-  });
-
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('budgets').delete().eq('id', id);
@@ -101,11 +70,6 @@ export default function BudgetsSection() {
     }
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    createMutation.mutate();
-  };
-
   if (isLoading) {
     return <div className="text-muted-foreground">Loading budgets...</div>;
   }
@@ -114,55 +78,10 @@ export default function BudgetsSection() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Budget Tracking</h2>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Budget
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create Budget</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label>Category</Label>
-                <Input
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  placeholder="e.g., Groceries, Dining"
-                  required
-                />
-              </div>
-              <div>
-                <Label>Budget Limit</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={limitAmount}
-                  onChange={(e) => setLimitAmount(e.target.value)}
-                  placeholder="0.00"
-                  required
-                />
-              </div>
-              <div>
-                <Label>Period</Label>
-                <Select value={period} onValueChange={setPeriod}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                    <SelectItem value="weekly">Weekly</SelectItem>
-                    <SelectItem value="yearly">Yearly</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button type="submit" className="w-full">Create Budget</Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => setShowAddDialog(true)}>
+          <Plus className="w-4 h-4 mr-2" />
+          Add Budget
+        </Button>
       </div>
 
       <div className="grid gap-4">
@@ -181,13 +100,22 @@ export default function BudgetsSection() {
                     <h3 className="font-semibold">{budget.category}</h3>
                     <p className="text-sm text-muted-foreground capitalize">{budget.period}</p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => deleteMutation.mutate(budget.id)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setEditingBudget(budget)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => deleteMutation.mutate(budget.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
@@ -212,6 +140,18 @@ export default function BudgetsSection() {
           </div>
         )}
       </div>
+
+      <AddBudgetDialog
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+      />
+      {editingBudget && (
+        <EditBudgetDialog
+          open={!!editingBudget}
+          onOpenChange={(open) => !open && setEditingBudget(null)}
+          budget={editingBudget}
+        />
+      )}
     </div>
   );
 }
