@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
 import AddBudgetDialog from "./AddBudgetDialog";
 import EditBudgetDialog from "./EditBudgetDialog";
+import InsightTooltip from "../InsightTooltip";
 
 export default function BudgetsSection() {
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -92,9 +93,19 @@ export default function BudgetsSection() {
               ? parseFloat(budget.limit_amount) 
               : budget.limit_amount;
             const percentage = (spent / limit) * 100;
+            
+            const getBudgetInsight = () => {
+              if (percentage > 100) return { text: `You're over budget! Reduce ${budget.category} spending to get back on track.`, type: 'warning' as const };
+              if (percentage > 80) return { text: `Approaching your limit. Monitor ${budget.category} spending closely.`, type: 'warning' as const };
+              if (percentage < 50) return { text: `Good job! You're well within your ${budget.category} budget.`, type: 'success' as const };
+              return { text: `Track your ${budget.category} expenses to stay on budget.`, type: 'info' as const };
+            };
+            
+            const insight = getBudgetInsight();
 
             return (
-              <div key={budget.id} className="card-surface">
+              <InsightTooltip key={budget.id} insight={insight.text} type={insight.type}>
+                <div className="card-surface">
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <h3 className="font-semibold">{budget.category}</h3>
@@ -131,7 +142,8 @@ export default function BudgetsSection() {
                     </p>
                   )}
                 </div>
-              </div>
+                </div>
+              </InsightTooltip>
             );
           })
         ) : (

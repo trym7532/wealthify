@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import ExpenseChart from "../components/ExpenseChart";
 import StatDetailDialog from "../components/dashboard/StatDetailDialog";
-import OnboardingTutorial from "../components/OnboardingTutorial";
+import InsightTooltip from "../components/InsightTooltip";
 import { TrendingUp, Wallet, PiggyBank, CreditCard, Target, DollarSign, Sparkles, TrendingDown, ArrowUpRight } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
@@ -226,8 +226,6 @@ export default function Dashboard() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -z-10" />
         <div className="absolute bottom-0 left-0 w-72 h-72 bg-accent/5 rounded-full blur-3xl -z-10" />
         
-        <OnboardingTutorial />
-        
         <div className="relative">
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-3xl font-bold text-gradient">Hey {userName}!</h1>
@@ -241,10 +239,15 @@ export default function Dashboard() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div 
-            className="stat-card group relative overflow-hidden"
-            onClick={() => setDetailDialog({ open: true, type: 'balance' })}
+          <InsightTooltip 
+            insight="Click to see a detailed breakdown of all your linked accounts and their balances"
+            type="tip"
+            showForNewUsers
           >
+            <div 
+              className="stat-card group relative overflow-hidden"
+              onClick={() => setDetailDialog({ open: true, type: 'balance' })}
+            >
             <div className="absolute top-0 right-0 opacity-5">
               <Wallet className="w-24 h-24" />
             </div>
@@ -259,12 +262,18 @@ export default function Dashboard() {
                 {accounts?.length || 0} accounts
               </div>
             </div>
-          </div>
+            </div>
+          </InsightTooltip>
 
-          <div 
-            className="stat-card group relative overflow-hidden"
-            onClick={() => setDetailDialog({ open: true, type: 'spend' })}
+          <InsightTooltip 
+            insight={monthlySpend > 2000 ? "Your spending is higher than average. Consider setting budgets to track expenses." : "Track your monthly spending by category. Click for details."}
+            type={monthlySpend > 2000 ? "warning" : "tip"}
+            showForNewUsers
           >
+            <div 
+              className="stat-card group relative overflow-hidden"
+              onClick={() => setDetailDialog({ open: true, type: 'spend' })}
+            >
             <div className="absolute top-0 right-0 opacity-5">
               <CreditCard className="w-24 h-24" />
             </div>
@@ -279,12 +288,18 @@ export default function Dashboard() {
                 {Object.keys(spendByCategory).length} categories
               </div>
             </div>
-          </div>
+            </div>
+          </InsightTooltip>
 
-          <div 
-            className="stat-card group relative overflow-hidden"
-            onClick={() => setDetailDialog({ open: true, type: 'savings' })}
+          <InsightTooltip 
+            insight={totalSavings > 0 ? "Great job building your savings! Keep contributing regularly." : "Start building your emergency fund by linking a savings account."}
+            type={totalSavings > 0 ? "success" : "info"}
+            showForNewUsers
           >
+            <div 
+              className="stat-card group relative overflow-hidden"
+              onClick={() => setDetailDialog({ open: true, type: 'savings' })}
+            >
             <div className="absolute top-0 right-0 opacity-5">
               <PiggyBank className="w-24 h-24" />
             </div>
@@ -299,12 +314,18 @@ export default function Dashboard() {
                 {savingsAccounts.length} accounts
               </div>
             </div>
-          </div>
+            </div>
+          </InsightTooltip>
 
-          <div 
-            className="stat-card group relative overflow-hidden"
-            onClick={() => setDetailDialog({ open: true, type: 'investments' })}
+          <InsightTooltip 
+            insight={totalInvestments > 0 ? "Your investments are growing! Monitor performance in the Investments tab." : "Start investing for your future. Check the Investments tab for AI-powered suggestions."}
+            type={totalInvestments > 0 ? "success" : "info"}
+            showForNewUsers
           >
+            <div 
+              className="stat-card group relative overflow-hidden"
+              onClick={() => setDetailDialog({ open: true, type: 'investments' })}
+            >
             <div className="absolute top-0 right-0 opacity-5">
               <TrendingUp className="w-24 h-24" />
             </div>
@@ -319,19 +340,25 @@ export default function Dashboard() {
                 {investmentAccounts.length} accounts
               </div>
             </div>
-          </div>
+            </div>
+          </InsightTooltip>
         </div>
 
         {/* Goals & Budgets Overview */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Goals Section */}
-          <div className="card-surface">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Target className="w-5 h-5 text-primary" />
-                Active Goals
-              </h3>
-            </div>
+          <InsightTooltip
+            insight="Set financial goals to stay motivated. Track progress and achieve your dreams!"
+            type="tip"
+            showForNewUsers
+          >
+            <div className="card-surface">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Target className="w-5 h-5 text-primary" />
+                  Active Goals
+                </h3>
+              </div>
             <div className="space-y-4">
               {goals && goals.length > 0 ? (
                 goals.map((goal) => {
@@ -355,10 +382,16 @@ export default function Dashboard() {
                 <p className="text-muted-foreground text-center py-4">No active goals</p>
               )}
             </div>
-          </div>
+            </div>
+          </InsightTooltip>
 
           {/* Budgets Section */}
-          <div className="card-surface">
+          <InsightTooltip
+            insight="Set monthly budgets to control spending and avoid overspending in any category"
+            type="tip"
+            showForNewUsers
+          >
+            <div className="card-surface">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <DollarSign className="w-5 h-5 text-primary" />
@@ -406,15 +439,24 @@ export default function Dashboard() {
                 <p className="text-muted-foreground text-center py-4">No budgets set</p>
               )}
             </div>
-          </div>
+            </div>
+          </InsightTooltip>
         </div>
 
         {/* Charts */}
         <div className="grid grid-cols-1 gap-6">
-          <div className="card-surface">
-            <h3 className="text-lg font-semibold mb-4">Monthly Spending Trend</h3>
-            <ExpenseChart data={monthlyData} />
-          </div>
+          <InsightTooltip
+            insight={monthlyData && monthlyData.length > 1 && monthlyData[monthlyData.length - 1].amount > monthlyData[monthlyData.length - 2].amount 
+              ? "Your spending increased this month. Review your categories to identify where you can save." 
+              : "Visualize your spending patterns over time to make informed financial decisions"}
+            type={monthlyData && monthlyData.length > 1 && monthlyData[monthlyData.length - 1].amount > monthlyData[monthlyData.length - 2].amount ? "warning" : "info"}
+            showForNewUsers
+          >
+            <div className="card-surface">
+              <h3 className="text-lg font-semibold mb-4">Monthly Spending Trend</h3>
+              <ExpenseChart data={monthlyData} />
+            </div>
+          </InsightTooltip>
         </div>
 
         {/* Recent Transactions */}

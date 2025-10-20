@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2, Target, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import EditGoalDialog from "./EditGoalDialog";
+import InsightTooltip from "../InsightTooltip";
 
 interface GoalCardProps {
   goal: any;
@@ -17,6 +18,16 @@ export default function GoalCard({ goal }: GoalCardProps) {
   const queryClient = useQueryClient();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const progress = (parseFloat(goal.current_amount) / parseFloat(goal.target_amount)) * 100;
+  
+  // Generate contextual insights
+  const getGoalInsight = () => {
+    if (progress >= 90) return { text: "Almost there! Just a little more to reach your goal!", type: 'success' as const };
+    if (progress >= 50) return { text: "You're halfway there! Keep up the great work!", type: 'success' as const };
+    if (progress < 25) return { text: "Start contributing regularly to build momentum towards your goal", type: 'info' as const };
+    return { text: "You're making progress! Stay consistent with contributions", type: 'info' as const };
+  };
+  
+  const insight = getGoalInsight();
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -53,7 +64,8 @@ export default function GoalCard({ goal }: GoalCardProps) {
 
   return (
     <>
-      <Card>
+      <InsightTooltip insight={insight.text} type={insight.type}>
+        <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <Target className="w-4 h-4" />
@@ -110,9 +122,10 @@ export default function GoalCard({ goal }: GoalCardProps) {
           </div>
         )}
       </CardContent>
-    </Card>
+      </Card>
+      </InsightTooltip>
     
-    <EditGoalDialog
+      <EditGoalDialog
       open={showEditDialog}
       onOpenChange={setShowEditDialog}
       goal={goal}

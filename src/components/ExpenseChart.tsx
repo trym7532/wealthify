@@ -116,9 +116,46 @@ export default function ExpenseChart({ data = [] }: ExpenseChartProps) {
     },
   };
 
+  // Calculate insights
+  const hasIncreasingTrend = values.length >= 2 && values[values.length - 1] > values[0];
+  const avgSpending = values.reduce((a, b) => a + b, 0) / values.length;
+  const lastMonthSpend = values[values.length - 1];
+  
+  let insight = "";
+  let insightType: 'info' | 'warning' | 'success' = 'info';
+  
+  if (lastMonthSpend > avgSpending * 1.2) {
+    insight = `Your spending is 20% above average. Consider reviewing your expenses.`;
+    insightType = 'warning';
+  } else if (lastMonthSpend < avgSpending * 0.8) {
+    insight = `Great job! You're spending 20% less than your average.`;
+    insightType = 'success';
+  } else if (hasIncreasingTrend) {
+    insight = `Your spending trend is increasing. Monitor your expenses closely.`;
+    insightType = 'warning';
+  } else {
+    insight = `Your spending is stable. Keep tracking to maintain good habits.`;
+    insightType = 'info';
+  }
+
   return (
-    <div className="h-[300px]">
-      <Line data={chartData} options={options} />
+    <div className="space-y-3">
+      {values.length > 0 && (
+        <div className={`p-3 rounded-lg border ${
+          insightType === 'warning' ? 'bg-yellow-500/5 border-yellow-500/20' :
+          insightType === 'success' ? 'bg-green-500/5 border-green-500/20' :
+          'bg-accent/5 border-accent/20'
+        }`}>
+          <div className="flex items-start gap-2">
+            <div className="text-xs leading-relaxed text-muted-foreground">
+              💡 {insight}
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="h-[300px]">
+        <Line data={chartData} options={options} />
+      </div>
     </div>
   );
 }
