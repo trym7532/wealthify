@@ -51,8 +51,8 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <div className="w-full max-w-md">
+    <div className="min-h-screen bg-background finance-pattern-bg flex items-center justify-center p-6">
+        <div className="w-full max-w-md animate-fade-in">
           <div className="card-surface">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold mb-2">Create account</h1>

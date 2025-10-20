@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LayoutDashboard, Sparkles, Settings, UserCircle, LogOut, Plus, TrendingUp } from "lucide-react";
+import { LayoutDashboard, Sparkles, Settings, UserCircle, LogOut, Plus, TrendingUp, Layers, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import Dashboard from "./Dashboard";
@@ -55,7 +55,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background finance-pattern-bg post-login-animation">
       <nav className="border-b border-border/50 backdrop-blur-sm bg-background/80 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -78,46 +78,46 @@ export default function Home() {
 
       <div className="max-w-7xl mx-auto p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-5">
-            <TabsTrigger value="dashboard" className="gap-2">
+          <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-5 p-1">
+            <TabsTrigger value="dashboard" className="gap-2 tab-hover">
               <LayoutDashboard className="w-4 h-4" />
               Dashboard
             </TabsTrigger>
-            <TabsTrigger value="hub" className="gap-2">
-              <Sparkles className="w-4 h-4" />
+            <TabsTrigger value="hub" className="gap-2 tab-hover">
+              <Layers className="w-4 h-4" />
               Hub
             </TabsTrigger>
-            <TabsTrigger value="investments" className="gap-2">
+            <TabsTrigger value="investments" className="gap-2 tab-hover">
               <TrendingUp className="w-4 h-4" />
               Investments
             </TabsTrigger>
-            <TabsTrigger value="settings" className="gap-2">
+            <TabsTrigger value="settings" className="gap-2 tab-hover">
               <Settings className="w-4 h-4" />
               Settings
             </TabsTrigger>
-            <TabsTrigger value="profile" className="gap-2">
-              <UserCircle className="w-4 h-4" />
+            <TabsTrigger value="profile" className="gap-2 tab-hover">
+              <UserIcon className="w-4 h-4" />
               Profile
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="dashboard">
+          <TabsContent value="dashboard" className="page-transition">
             <Dashboard />
           </TabsContent>
 
-          <TabsContent value="hub">
+          <TabsContent value="hub" className="page-transition">
             <Hub />
           </TabsContent>
 
-          <TabsContent value="investments">
+          <TabsContent value="investments" className="page-transition">
             <Investments />
           </TabsContent>
 
-          <TabsContent value="settings">
+          <TabsContent value="settings" className="page-transition">
             <SettingsPage />
           </TabsContent>
 
-          <TabsContent value="profile">
+          <TabsContent value="profile" className="page-transition">
             <Profile />
           </TabsContent>
         </Tabs>

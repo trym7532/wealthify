@@ -7,9 +7,9 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground finance-pattern-bg">
       <Navbar />
-      <main className="p-6 max-w-7xl mx-auto">{children}</main>
+      <main className="p-6 max-w-7xl mx-auto relative z-10">{children}</main>
     </div>
   );
 }
