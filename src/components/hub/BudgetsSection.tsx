@@ -77,12 +77,16 @@ export default function BudgetsSection() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Budget Tracking</h2>
-        <Button onClick={() => setShowAddDialog(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Budget
-        </Button>
+      <div className="flex items-center justify-between">
+        <InsightTooltip insight="Create budgets for categories like groceries, entertainment, or utilities" showForNewUsers>
+          <h2 className="text-2xl font-semibold">Budget Management</h2>
+        </InsightTooltip>
+        <InsightTooltip insight="Set spending limits for different categories to control expenses" type="tip" showForNewUsers>
+          <Button onClick={() => setShowAddDialog(true)} className="gap-2">
+            <Plus className="w-4 h-4" />
+            Add Budget
+          </Button>
+        </InsightTooltip>
       </div>
 
       <div className="grid gap-4">

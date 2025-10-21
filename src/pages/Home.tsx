@@ -12,6 +12,7 @@ import SettingsPage from "./Settings";
 import Profile from "./Profile";
 import Investments from "./Investments";
 import QuickActionWidget from "@/components/QuickActionWidget";
+import InsightTooltip from "@/components/InsightTooltip";
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
@@ -79,26 +80,36 @@ export default function Home() {
       <div className="max-w-7xl mx-auto p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-5 p-1">
-            <TabsTrigger value="dashboard" className="gap-2 tab-hover">
-              <LayoutDashboard className="w-4 h-4" />
-              Dashboard
-            </TabsTrigger>
-            <TabsTrigger value="hub" className="gap-2 tab-hover">
-              <Layers className="w-4 h-4" />
-              Hub
-            </TabsTrigger>
-            <TabsTrigger value="investments" className="gap-2 tab-hover">
-              <TrendingUp className="w-4 h-4" />
-              Investments
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="gap-2 tab-hover">
-              <Settings className="w-4 h-4" />
-              Settings
-            </TabsTrigger>
-            <TabsTrigger value="profile" className="gap-2 tab-hover">
-              <UserIcon className="w-4 h-4" />
-              Profile
-            </TabsTrigger>
+            <InsightTooltip insight="Your financial overview with key metrics and insights" type="tip" showForNewUsers>
+              <TabsTrigger value="dashboard" className="gap-2 tab-hover">
+                <LayoutDashboard className="w-4 h-4" />
+                Dashboard
+              </TabsTrigger>
+            </InsightTooltip>
+            <InsightTooltip insight="Manage accounts, transactions, goals, and budgets" type="tip" showForNewUsers>
+              <TabsTrigger value="hub" className="gap-2 tab-hover">
+                <Layers className="w-4 h-4" />
+                Hub
+              </TabsTrigger>
+            </InsightTooltip>
+            <InsightTooltip insight="Track your investment portfolio and performance" type="tip" showForNewUsers>
+              <TabsTrigger value="investments" className="gap-2 tab-hover">
+                <TrendingUp className="w-4 h-4" />
+                Investments
+              </TabsTrigger>
+            </InsightTooltip>
+            <InsightTooltip insight="Customize your preferences and account settings" type="tip" showForNewUsers>
+              <TabsTrigger value="settings" className="gap-2 tab-hover">
+                <Settings className="w-4 h-4" />
+                Settings
+              </TabsTrigger>
+            </InsightTooltip>
+            <InsightTooltip insight="View and edit your profile information" type="tip" showForNewUsers>
+              <TabsTrigger value="profile" className="gap-2 tab-hover">
+                <UserIcon className="w-4 h-4" />
+                Profile
+              </TabsTrigger>
+            </InsightTooltip>
           </TabsList>
 
           <TabsContent value="dashboard" className="page-transition">

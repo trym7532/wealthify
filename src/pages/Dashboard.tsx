@@ -4,10 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import ExpenseChart from "../components/ExpenseChart";
 import StatDetailDialog from "../components/dashboard/StatDetailDialog";
 import InsightTooltip from "../components/InsightTooltip";
+import DashboardInsights from "../components/dashboard/DashboardInsights";
 import { TrendingUp, Wallet, PiggyBank, CreditCard, Target, DollarSign, Sparkles, TrendingDown, ArrowUpRight } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function Dashboard() {
+  const [showAllBudgets, setShowAllBudgets] = useState(false);
+  const [showAllGoals, setShowAllGoals] = useState(false);
   const [detailDialog, setDetailDialog] = useState<{
     open: boolean;
     type: 'balance' | 'spend' | 'savings' | 'investments' | null;
@@ -344,6 +348,9 @@ export default function Dashboard() {
           </InsightTooltip>
         </div>
 
+        {/* Smart Insights Section */}
+        <DashboardInsights />
+
         {/* Goals & Budgets Overview */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Goals Section */}
@@ -352,7 +359,7 @@ export default function Dashboard() {
             type="tip"
             showForNewUsers
           >
-            <div className="card-surface">
+            <div className="card-surface cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setShowAllGoals(true)}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                   <Target className="w-5 h-5 text-primary" />
@@ -361,23 +368,28 @@ export default function Dashboard() {
               </div>
             <div className="space-y-4">
               {goals && goals.length > 0 ? (
-                goals.map((goal) => {
-                  const progress = (parseFloat(goal.current_amount.toString()) / parseFloat(goal.target_amount.toString())) * 100;
-                  return (
-                    <div key={goal.id} className="p-4 bg-surface rounded-lg hover:bg-surface/80 transition-colors">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <div className="font-medium">{goal.goal_name}</div>
-                          <div className="text-xs text-muted-foreground">
-                            ${parseFloat(goal.current_amount.toString()).toFixed(2)} of ${parseFloat(goal.target_amount.toString()).toFixed(2)}
+                <>
+                  {goals.map((goal) => {
+                    const progress = (parseFloat(goal.current_amount.toString()) / parseFloat(goal.target_amount.toString())) * 100;
+                    return (
+                      <div key={goal.id} className="p-4 bg-surface rounded-lg hover:bg-surface/80 transition-colors">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <div className="font-medium">{goal.goal_name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              ${parseFloat(goal.current_amount.toString()).toFixed(2)} of ${parseFloat(goal.target_amount.toString()).toFixed(2)}
+                            </div>
                           </div>
+                          <div className="text-sm font-semibold text-primary">{progress.toFixed(0)}%</div>
                         </div>
-                        <div className="text-sm font-semibold text-primary">{progress.toFixed(0)}%</div>
+                        <Progress value={progress} className="h-2" />
                       </div>
-                      <Progress value={progress} className="h-2" />
-                    </div>
-                  );
-                })
+                    );
+                  })}
+                  <p className="text-xs text-center text-muted-foreground pt-2">
+                    Click to view all goals
+                  </p>
+                </>
               ) : (
                 <p className="text-muted-foreground text-center py-4">No active goals</p>
               )}
@@ -391,7 +403,7 @@ export default function Dashboard() {
             type="tip"
             showForNewUsers
           >
-            <div className="card-surface">
+            <div className="card-surface cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setShowAllBudgets(true)}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <DollarSign className="w-5 h-5 text-primary" />
@@ -400,41 +412,46 @@ export default function Dashboard() {
             </div>
             <div className="space-y-4">
               {budgets && budgets.length > 0 ? (
-                budgets.map((budget) => {
-                  const spent = budgetSpending?.[budget.category] || 0;
-                  const limit = parseFloat(budget.limit_amount.toString());
-                  const progress = (spent / limit) * 100;
-                  const isOverBudget = spent > limit;
-                  
-                  return (
-                    <div 
-                      key={budget.id} 
-                      className={`p-4 rounded-lg transition-all ${
-                        isOverBudget 
-                          ? 'bg-destructive/10 border-2 border-destructive shadow-lg scale-105' 
-                          : 'bg-surface hover:bg-surface/80'
-                      }`}
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <div className="font-medium">{budget.category}</div>
-                          <div className="text-xs text-muted-foreground">
-                            ${spent.toFixed(2)} of ${limit.toFixed(2)}
+                <>
+                  {budgets.map((budget) => {
+                    const spent = budgetSpending?.[budget.category] || 0;
+                    const limit = parseFloat(budget.limit_amount.toString());
+                    const progress = (spent / limit) * 100;
+                    const isOverBudget = spent > limit;
+                    
+                    return (
+                      <div 
+                        key={budget.id} 
+                        className={`p-4 rounded-lg transition-all ${
+                          isOverBudget 
+                            ? 'bg-destructive/10 border-2 border-destructive shadow-lg scale-105' 
+                            : 'bg-surface hover:bg-surface/80'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <div className="font-medium">{budget.category}</div>
+                            <div className="text-xs text-muted-foreground">
+                              ${spent.toFixed(2)} of ${limit.toFixed(2)}
+                            </div>
+                          </div>
+                          <div className={`text-sm font-semibold ${isOverBudget ? 'text-destructive' : 'text-primary'}`}>
+                            {progress.toFixed(0)}%
                           </div>
                         </div>
-                        <div className={`text-sm font-semibold ${isOverBudget ? 'text-destructive' : 'text-primary'}`}>
-                          {progress.toFixed(0)}%
-                        </div>
+                        <Progress value={Math.min(progress, 100)} className="h-2" />
+                        {isOverBudget && (
+                          <div className="text-xs text-destructive mt-2 font-medium">
+                            ⚠️ Over budget by ${(spent - limit).toFixed(2)}
+                          </div>
+                        )}
                       </div>
-                      <Progress value={Math.min(progress, 100)} className="h-2" />
-                      {isOverBudget && (
-                        <div className="text-xs text-destructive mt-2 font-medium">
-                          ⚠️ Over budget by ${(spent - limit).toFixed(2)}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })
+                    );
+                  })}
+                  <p className="text-xs text-center text-muted-foreground pt-2">
+                    Click to view all budgets
+                  </p>
+                </>
               ) : (
                 <p className="text-muted-foreground text-center py-4">No budgets set</p>
               )}
@@ -442,6 +459,74 @@ export default function Dashboard() {
             </div>
           </InsightTooltip>
         </div>
+
+        {/* All Goals Dialog */}
+        <Dialog open={showAllGoals} onOpenChange={setShowAllGoals}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>All Financial Goals</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {goals?.map((goal) => {
+                const progress = (parseFloat(goal.current_amount.toString()) / parseFloat(goal.target_amount.toString())) * 100;
+                return (
+                  <div key={goal.id} className="p-4 bg-surface rounded-lg">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 className="font-semibold">{goal.goal_name}</h4>
+                        <p className="text-sm text-muted-foreground capitalize">{goal.category}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold">${parseFloat(goal.current_amount.toString()).toFixed(2)}</p>
+                        <p className="text-sm text-muted-foreground">of ${parseFloat(goal.target_amount.toString()).toFixed(2)}</p>
+                      </div>
+                    </div>
+                    <Progress value={progress} className="h-3" />
+                    <p className="text-xs text-right text-muted-foreground mt-1">{progress.toFixed(1)}%</p>
+                  </div>
+                );
+              })}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* All Budgets Dialog */}
+        <Dialog open={showAllBudgets} onOpenChange={setShowAllBudgets}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>All Budgets</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {budgets?.map((budget) => {
+                const spent = budgetSpending?.[budget.category] || 0;
+                const limit = parseFloat(budget.limit_amount.toString());
+                const percentage = (spent / limit) * 100;
+                const isOverBudget = percentage > 100;
+
+                return (
+                  <div key={budget.id} className="p-4 bg-surface rounded-lg">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 className="font-semibold">{budget.category}</h4>
+                        <p className="text-sm text-muted-foreground capitalize">{budget.period}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className={`font-bold ${isOverBudget ? 'text-destructive' : ''}`}>
+                          ${spent.toFixed(2)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">of ${limit.toFixed(2)}</p>
+                      </div>
+                    </div>
+                    <Progress value={Math.min(percentage, 100)} className="h-3" />
+                    <p className={`text-xs text-right mt-1 ${isOverBudget ? 'text-destructive' : 'text-muted-foreground'}`}>
+                      {percentage.toFixed(1)}% {isOverBudget && '(Over Budget!)'}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Charts */}
         <div className="grid grid-cols-1 gap-6">

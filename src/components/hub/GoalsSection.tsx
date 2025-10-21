@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import AddGoalDialog from "./AddGoalDialog";
 import GoalCard from "./GoalCard";
+import InsightTooltip from "@/components/InsightTooltip";
 
 export default function GoalsSection() {
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -25,11 +26,15 @@ export default function GoalsSection() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Financial Goals</h2>
-        <Button onClick={() => setShowAddDialog(true)} className="gap-2">
-          <Plus className="w-4 h-4" />
-          Add Goal
-        </Button>
+        <InsightTooltip insight="Set financial goals like saving for a house, vacation, or emergency fund" showForNewUsers>
+          <h2 className="text-2xl font-semibold">Financial Goals</h2>
+        </InsightTooltip>
+        <InsightTooltip insight="Create a new financial goal to stay motivated and track progress" type="tip" showForNewUsers>
+          <Button onClick={() => setShowAddDialog(true)} className="gap-2">
+            <Plus className="w-4 h-4" />
+            Add Goal
+          </Button>
+        </InsightTooltip>
       </div>
 
       {isLoading ? (

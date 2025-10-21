@@ -49,13 +49,13 @@ export default function InsightTooltip({
   const getTypeStyles = () => {
     switch (type) {
       case 'warning':
-        return 'bg-yellow-500/10 border-yellow-500/20 text-yellow-200';
+        return 'bg-yellow-500/95 border-yellow-500/40 text-yellow-950 dark:bg-yellow-500/90 dark:text-yellow-50';
       case 'success':
-        return 'bg-green-500/10 border-green-500/20 text-green-200';
+        return 'bg-green-500/95 border-green-500/40 text-green-950 dark:bg-green-500/90 dark:text-green-50';
       case 'tip':
-        return 'bg-primary/10 border-primary/20 text-primary';
+        return 'bg-primary/95 border-primary/40 text-primary-foreground';
       default:
-        return 'bg-accent/10 border-accent/20 text-accent-foreground';
+        return 'bg-popover/95 border-border text-popover-foreground backdrop-blur-sm';
     }
   };
 
@@ -66,12 +66,12 @@ export default function InsightTooltip({
           {children}
         </TooltipTrigger>
         <TooltipContent 
-          className={`max-w-xs p-3 ${getTypeStyles()} border animate-in fade-in-0 zoom-in-95`}
+          className={`max-w-xs p-4 ${getTypeStyles()} border-2 animate-in fade-in-0 zoom-in-95 shadow-lg`}
           sideOffset={8}
         >
           <div className="flex items-start gap-2">
-            <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0" />
-            <p className="text-sm leading-relaxed">{insight}</p>
+            <Lightbulb className="w-5 h-5 mt-0.5 flex-shrink-0" />
+            <p className="text-sm font-medium leading-relaxed">{insight}</p>
           </div>
         </TooltipContent>
       </Tooltip>

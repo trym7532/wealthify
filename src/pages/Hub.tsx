@@ -6,6 +6,7 @@ import TransactionsSection from "@/components/hub/TransactionsSection";
 import GoalsSection from "@/components/hub/GoalsSection";
 import InsightsSection from "@/components/hub/InsightsSection";
 import BudgetsSection from "@/components/hub/BudgetsSection";
+import InsightTooltip from "@/components/InsightTooltip";
 
 export default function Hub() {
   const [activeTab, setActiveTab] = useState("accounts");
@@ -23,26 +24,36 @@ export default function Hub() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid grid-cols-5 w-full">
-            <TabsTrigger value="accounts" className="flex items-center gap-2">
-              <Landmark className="w-4 h-4" />
-              <span className="hidden sm:inline">Accounts</span>
-            </TabsTrigger>
-            <TabsTrigger value="transactions" className="flex items-center gap-2">
-              <Receipt className="w-4 h-4" />
-              <span className="hidden sm:inline">Transactions</span>
-            </TabsTrigger>
-            <TabsTrigger value="goals" className="flex items-center gap-2">
-              <Target className="w-4 h-4" />
-              <span className="hidden sm:inline">Goals</span>
-            </TabsTrigger>
-            <TabsTrigger value="budgets" className="flex items-center gap-2">
-              <Wallet className="w-4 h-4" />
-              <span className="hidden sm:inline">Budgets</span>
-            </TabsTrigger>
-            <TabsTrigger value="insights" className="flex items-center gap-2">
-              <Brain className="w-4 h-4" />
-              <span className="hidden sm:inline">Insights</span>
-            </TabsTrigger>
+            <InsightTooltip insight="View and manage all your connected bank accounts" type="tip" showForNewUsers>
+              <TabsTrigger value="accounts" className="flex items-center gap-2">
+                <Landmark className="w-4 h-4" />
+                <span className="hidden sm:inline">Accounts</span>
+              </TabsTrigger>
+            </InsightTooltip>
+            <InsightTooltip insight="Track all your income and expenses in one place" type="tip" showForNewUsers>
+              <TabsTrigger value="transactions" className="flex items-center gap-2">
+                <Receipt className="w-4 h-4" />
+                <span className="hidden sm:inline">Transactions</span>
+              </TabsTrigger>
+            </InsightTooltip>
+            <InsightTooltip insight="Set and track your financial goals like savings or debt payoff" type="tip" showForNewUsers>
+              <TabsTrigger value="goals" className="flex items-center gap-2">
+                <Target className="w-4 h-4" />
+                <span className="hidden sm:inline">Goals</span>
+              </TabsTrigger>
+            </InsightTooltip>
+            <InsightTooltip insight="Create budgets for different spending categories" type="tip" showForNewUsers>
+              <TabsTrigger value="budgets" className="flex items-center gap-2">
+                <Wallet className="w-4 h-4" />
+                <span className="hidden sm:inline">Budgets</span>
+              </TabsTrigger>
+            </InsightTooltip>
+            <InsightTooltip insight="Get AI-powered insights to improve your financial health" type="tip" showForNewUsers>
+              <TabsTrigger value="insights" className="flex items-center gap-2">
+                <Brain className="w-4 h-4" />
+                <span className="hidden sm:inline">Insights</span>
+              </TabsTrigger>
+            </InsightTooltip>
           </TabsList>
 
           <TabsContent value="accounts" className="space-y-4">

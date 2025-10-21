@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import InsightTooltip from "@/components/InsightTooltip";
 
 export default function InvestmentsSection() {
   const [open, setOpen] = useState(false);
@@ -77,17 +78,21 @@ export default function InvestmentsSection() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-xl font-semibold">Investment Portfolio</h2>
-          <p className="text-2xl font-bold mt-2">${totalValue.toFixed(2)}</p>
-        </div>
+        <InsightTooltip insight="Track all your investment accounts and monitor total portfolio value" showForNewUsers>
+          <div>
+            <h2 className="text-xl font-semibold">Investment Portfolio</h2>
+            <p className="text-2xl font-bold mt-2">${totalValue.toFixed(2)}</p>
+          </div>
+        </InsightTooltip>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Investment
-            </Button>
-          </DialogTrigger>
+          <InsightTooltip insight="Add your investment accounts to track portfolio growth" type="tip" showForNewUsers>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Investment
+              </Button>
+            </DialogTrigger>
+          </InsightTooltip>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add Investment Account</DialogTitle>

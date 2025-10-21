@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AddAccountDialog from "./AddAccountDialog";
 import AccountCard from "./AccountCard";
+import InsightTooltip from "@/components/InsightTooltip";
 
 export default function AccountsSection() {
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -58,11 +59,15 @@ export default function AccountsSection() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Bank Accounts</h2>
-        <Button onClick={() => setShowAddDialog(true)} className="gap-2">
-          <Plus className="w-4 h-4" />
-          Link Account
-        </Button>
+        <InsightTooltip insight="Link your bank accounts to automatically track balances and transactions" showForNewUsers>
+          <h2 className="text-2xl font-semibold">Bank Accounts</h2>
+        </InsightTooltip>
+        <InsightTooltip insight="Click here to connect a new bank account" type="tip" showForNewUsers>
+          <Button onClick={() => setShowAddDialog(true)} className="gap-2">
+            <Plus className="w-4 h-4" />
+            Link Account
+          </Button>
+        </InsightTooltip>
       </div>
 
       {accounts && accounts.length > 0 ? (
