@@ -7,28 +7,28 @@ const Index = () => {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="py-16 md:py-24">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <div className="inline-block px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium border border-primary/20">
+      <section className="py-8 sm:py-16 md:py-24">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="inline-block px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium border border-primary/20">
               AI-Powered Financial Intelligence
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
               Wealthify — <span className="text-gradient">Smarter</span> personal finance
             </h1>
-            <p className="text-xl text-muted-foreground leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed">
               AI-powered expense forecasting, intelligent budget planning, and beautiful dashboards 
               to help you take control of your financial future.
             </p>
-            <div className="flex flex-wrap gap-4 pt-4">
-              <Link to="/register">
-                <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-lg px-8 py-6 shadow-lg hover:shadow-[var(--shadow-glow)] transition-all">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 pt-2 sm:pt-4">
+              <Link to="/register" className="w-full sm:w-auto">
+                <Button className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 shadow-lg hover:shadow-[var(--shadow-glow)] transition-all">
                   Get started — it's free
-                  <ArrowRight className="ml-2 w-5 h-5" />
+                  <ArrowRight className="ml-2 w-4 sm:w-5 h-4 sm:h-5" />
                 </Button>
               </Link>
-              <Link to="/dashboard">
-                <Button variant="outline" className="text-lg px-8 py-6 border-border/50 hover:border-primary/50">
+              <Link to="/dashboard" className="w-full sm:w-auto">
+                <Button variant="outline" className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 border-border/50 hover:border-primary/50">
                   View demo
                 </Button>
               </Link>
@@ -71,13 +71,13 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Everything you need to manage wealth</h2>
-          <p className="text-muted-foreground text-lg">Powerful features designed for the modern investor</p>
+      <section className="py-8 sm:py-16">
+        <div className="text-center mb-8 sm:mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">Everything you need to manage wealth</h2>
+          <p className="text-muted-foreground text-base sm:text-lg">Powerful features designed for the modern investor</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <div className="card-surface group hover:border-primary/30 transition-all">
             <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center mb-4 group-hover:shadow-[var(--shadow-glow)] transition-all">
               <Brain className="w-6 h-6 text-background" />
@@ -121,18 +121,18 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16">
+      <section className="py-8 sm:py-16">
         <div className="card-surface text-center bg-gradient-to-br from-card to-secondary/30">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
             Ready to take control of your finances?
           </h2>
-          <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-base sm:text-lg mb-6 sm:mb-8 max-w-2xl mx-auto">
             Join thousands of users who are already using Wealthify to achieve their financial goals
           </p>
-          <Link to="/register">
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-lg px-8 py-6 shadow-lg hover:shadow-[var(--shadow-glow)] transition-all">
+          <Link to="/register" className="inline-block w-full sm:w-auto">
+            <Button className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 shadow-lg hover:shadow-[var(--shadow-glow)] transition-all">
               Start your free trial
-              <ArrowRight className="ml-2 w-5 h-5" />
+              <ArrowRight className="ml-2 w-4 sm:w-5 h-4 sm:h-5" />
             </Button>
           </Link>
         </div>
