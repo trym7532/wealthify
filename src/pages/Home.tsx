@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LayoutDashboard, Sparkles, Settings, UserCircle, LogOut, Plus, TrendingUp, Layers, User as UserIcon } from "lucide-react";
+import { LayoutDashboard, Sparkles, Settings, UserCircle, LogOut, TrendingUp, Layers, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import Dashboard from "./Dashboard";
@@ -12,6 +12,7 @@ import SettingsPage from "./Settings";
 import Profile from "./Profile";
 import Investments from "./Investments";
 import QuickActionWidget from "@/components/QuickActionWidget";
+import FloatingActionButton from "@/components/FloatingActionButton";
 import InsightTooltip from "@/components/InsightTooltip";
 
 export default function Home() {
@@ -56,7 +57,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background finance-pattern-bg post-login-animation">
+    <div className="min-h-screen bg-background finance-pattern-bg">
       <nav className="border-b border-border/50 backdrop-blur-sm bg-background/80 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -135,12 +136,7 @@ export default function Home() {
       </div>
 
       {/* Quick Action Button */}
-      <Button
-        onClick={() => setShowQuickAction(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-[var(--shadow-glow)] gradient-primary p-0 hover:scale-110 transition-transform"
-      >
-        <Plus className="w-6 h-6" />
-      </Button>
+      <FloatingActionButton onClick={() => setShowQuickAction(true)} />
 
       {/* Quick Action Widget */}
       <QuickActionWidget 
