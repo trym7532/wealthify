@@ -1,9 +1,28 @@
 import { Link, useLocation } from "react-router-dom";
-import { Wallet, LayoutDashboard, LogIn, Sparkles } from "lucide-react";
+import { Wallet, LayoutDashboard, LogOut, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { User } from "@supabase/supabase-js";
 
 export default function Navbar() {
   const location = useLocation();
-  const isLoginPage = location.pathname === "/login";
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
 
   return (
     <nav className="border-b border-border/50 backdrop-blur-sm bg-background/80 sticky top-0 z-50">
@@ -15,31 +34,40 @@ export default function Navbar() {
           <span className="text-lg sm:text-xl font-bold tracking-tight">Wealthify</span>
         </Link>
         
-        {!isLoginPage && (
-          <div className="flex items-center gap-3 sm:gap-6">
-            <Link 
-              to="/dashboard" 
-              className="flex items-center gap-1 sm:gap-2 text-muted-foreground hover:text-primary transition-colors"
-            >
-              <LayoutDashboard className="w-4 h-4" />
-              <span className="hidden sm:inline">Dashboard</span>
-            </Link>
-            <Link 
-              to="/hub" 
-              className="flex items-center gap-1 sm:gap-2 text-muted-foreground hover:text-primary transition-colors"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span className="hidden sm:inline">Hub</span>
-            </Link>
+        <div className="flex items-center gap-3 sm:gap-6">
+          {user ? (
+            <>
+              <Link 
+                to="/dashboard" 
+                className="flex items-center gap-1 sm:gap-2 text-muted-foreground hover:text-primary transition-colors"
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                <span className="hidden sm:inline">Dashboard</span>
+              </Link>
+              <Link 
+                to="/hub" 
+                className="flex items-center gap-1 sm:gap-2 text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span className="hidden sm:inline">Hub</span>
+              </Link>
+              <button 
+                onClick={handleLogout}
+                className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
+            </>
+          ) : (
             <Link 
               to="/login" 
               className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
             >
-              <LogIn className="w-4 h-4" />
-              <span className="hidden sm:inline">Login</span>
+              <span>Login</span>
             </Link>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </nav>
   );
