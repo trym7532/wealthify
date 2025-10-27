@@ -21,34 +21,48 @@ export default function InsightCarousel() {
   const { data: transactions } = useQuery({
     queryKey: ['transactions-insights'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       const { data } = await supabase
         .from('transactions')
         .select('*')
+        .eq('user_id', user.id)
         .gte('transaction_date', thirtyDaysAgo.toISOString().split('T')[0]);
       return data || [];
     },
+    refetchInterval: 10000,
   });
 
   const { data: budgets } = useQuery({
     queryKey: ['budgets-insights'],
     queryFn: async () => {
-      const { data } = await supabase.from('budgets').select('*');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      const { data } = await supabase
+        .from('budgets')
+        .select('*')
+        .eq('user_id', user.id);
       return data || [];
     },
+    refetchInterval: 10000,
   });
 
   const { data: investments } = useQuery({
     queryKey: ['investments-insights'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
       const { data } = await supabase
         .from('linked_accounts')
         .select('*')
+        .eq('user_id', user.id)
         .eq('account_type', 'investment')
         .eq('is_active', true);
       return data || [];
     },
+    refetchInterval: 10000,
   });
 
   const categorySpending = transactions?.reduce((acc: Record<string, number>, t) => {
