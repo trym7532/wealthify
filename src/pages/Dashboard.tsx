@@ -241,6 +241,9 @@ export default function Dashboard() {
           </p>
         </div>
 
+        {/* Smart Insights Section */}
+        <InsightCarousel />
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <InsightTooltip 
@@ -347,9 +350,6 @@ export default function Dashboard() {
             </div>
           </InsightTooltip>
         </div>
-
-        {/* Smart Insights Section */}
-        <InsightCarousel />
 
         {/* Goals & Budgets Overview */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
