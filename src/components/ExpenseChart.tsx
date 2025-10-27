@@ -139,9 +139,9 @@ export default function ExpenseChart({ data = [] }: ExpenseChartProps) {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 animate-fade-in-up">
       {values.length > 0 && (
-        <div className={`p-3 rounded-lg border ${
+        <div className={`p-3 rounded-lg border animate-popup ${
           insightType === 'warning' ? 'bg-yellow-500/5 border-yellow-500/20' :
           insightType === 'success' ? 'bg-green-500/5 border-green-500/20' :
           'bg-accent/5 border-accent/20'
@@ -153,7 +153,7 @@ export default function ExpenseChart({ data = [] }: ExpenseChartProps) {
           </div>
         </div>
       )}
-      <div className="h-[300px]">
+      <div className="h-[300px] animate-scale-in">
         <Line data={chartData} options={options} />
       </div>
     </div>

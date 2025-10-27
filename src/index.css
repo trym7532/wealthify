@@ -165,6 +165,7 @@ All colors MUST be HSL.
   .stat-card {
     @apply card-surface cursor-pointer relative overflow-hidden;
     transition: var(--transition-smooth);
+    animation: fade-in-up 0.5s ease-out;
   }
   
   .stat-card::before {
@@ -180,6 +181,21 @@ All colors MUST be HSL.
   .stat-card:hover {
     transform: translateY(-4px) scale(1.02);
     box-shadow: var(--shadow-premium);
+  }
+
+  .popup-animation {
+    animation: popup 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .insight-capsule {
+    @apply bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 
+           border border-primary/20 rounded-full px-6 py-3 
+           hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10
+           transition-all duration-300 cursor-pointer backdrop-blur-sm;
+  }
+
+  .card-surface {
+    animation: fade-in-up 0.5s ease-out;
   }
   
   .page-transition {

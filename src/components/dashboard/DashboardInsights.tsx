@@ -1,8 +1,12 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { TrendingDown, TrendingUp, AlertCircle, Target } from "lucide-react";
+import { TrendingDown, TrendingUp, AlertCircle, Target, X } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function DashboardInsights() {
+  const [showAllInsights, setShowAllInsights] = useState(false);
+
   const { data: transactions } = useQuery({
     queryKey: ['transactions-insights'],
     queryFn: async () => {
@@ -57,77 +61,114 @@ export default function DashboardInsights() {
   const totalInvestments = investments?.reduce((sum, inv) => sum + parseFloat(inv.balance.toString()), 0) || 0;
   const avgInvestmentValue = investments?.length ? totalInvestments / investments.length : 0;
 
+  // Prepare all insights
+  const allInsights = [];
+
+  if (overspendingCategories && overspendingCategories.length > 0) {
+    overspendingCategories.forEach((item) => {
+      allInsights.push({
+        type: 'alert',
+        icon: TrendingDown,
+        color: 'destructive',
+        title: `Overspending Alert: ${item.category}`,
+        message: `You've spent $${item.spent.toFixed(2)} of your $${item.limit.toFixed(2)} budget — that's $${item.overage.toFixed(2)} over limit.`
+      });
+    });
+  } else {
+    allInsights.push({
+      type: 'success',
+      icon: TrendingUp,
+      color: 'success',
+      title: 'Great Budget Management!',
+      message: "You're staying within all your budgets this month. Keep up the excellent work!"
+    });
+  }
+
+  if (investments && investments.length > 0) {
+    allInsights.push({
+      type: 'info',
+      icon: Target,
+      color: 'primary',
+      title: 'Investment Portfolio Update',
+      message: `Your portfolio has ${investments.length} investment${investments.length > 1 ? 's' : ''} totaling $${totalInvestments.toFixed(2)}. Average value per investment: $${avgInvestmentValue.toFixed(2)}.${totalInvestments < 10000 ? " Consider increasing contributions to reach your long-term goals faster." : ""}`
+    });
+  }
+
+  if (transactions && transactions.length > 0) {
+    allInsights.push({
+      type: 'activity',
+      icon: TrendingUp,
+      color: 'accent',
+      title: 'Monthly Activity',
+      message: `You've made ${transactions.length} transaction${transactions.length > 1 ? 's' : ''} in the last 30 days.${transactions.length > 50 ? " That's quite active! Consider reviewing recurring expenses to identify savings opportunities." : ""}`
+    });
+  }
+
+  // Combine all insights into scrolling text
+  const scrollingText = allInsights.map(i => i.title).join(' • ');
+
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold flex items-center gap-2">
-        <AlertCircle className="w-5 h-5" />
-        Smart Insights
-      </h2>
-      
-      <div className="grid gap-3">
-        {/* Overspending Alerts */}
-        {overspendingCategories && overspendingCategories.length > 0 ? (
-          overspendingCategories.map((item, idx) => (
-            <div key={idx} className="card-surface border-l-4 border-l-destructive">
-              <div className="flex items-start gap-3">
-                <TrendingDown className="w-5 h-5 text-destructive mt-0.5" />
-                <div>
-                  <h3 className="font-semibold text-destructive">Overspending Alert: {item.category}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    You've spent ${item.spent.toFixed(2)} of your ${item.limit.toFixed(2)} budget 
-                    — that's ${item.overage.toFixed(2)} over limit. Consider reducing expenses in this category.
-                  </p>
+    <>
+      <div 
+        className="insight-capsule relative overflow-hidden"
+        onClick={() => setShowAllInsights(true)}
+      >
+        <div className="flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 animate-pulse" />
+          <div className="overflow-hidden flex-1">
+            <div className="flex gap-8 animate-scroll-left whitespace-nowrap">
+              <span className="text-sm font-medium">{scrollingText}</span>
+              <span className="text-sm font-medium">{scrollingText}</span>
+            </div>
+          </div>
+          <span className="text-xs text-muted-foreground flex-shrink-0">Click for details →</span>
+        </div>
+      </div>
+
+      <Dialog open={showAllInsights} onOpenChange={setShowAllInsights}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto popup-animation">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-primary" />
+              Smart Insights
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-3 mt-4">
+            {allInsights.map((insight, idx) => (
+              <div 
+                key={idx} 
+                className={`card-surface border-l-4 ${
+                  insight.color === 'destructive' ? 'border-l-destructive' :
+                  insight.color === 'success' ? 'border-l-success' :
+                  insight.color === 'primary' ? 'border-l-primary' :
+                  'border-l-accent'
+                } animate-fade-in-up`}
+                style={{ animationDelay: `${idx * 0.1}s` }}
+              >
+                <div className="flex items-start gap-3">
+                  <insight.icon className={`w-5 h-5 mt-0.5 ${
+                    insight.color === 'destructive' ? 'text-destructive' :
+                    insight.color === 'success' ? 'text-success' :
+                    insight.color === 'primary' ? 'text-primary' :
+                    'text-accent'
+                  }`} />
+                  <div>
+                    <h3 className={`font-semibold ${
+                      insight.color === 'destructive' ? 'text-destructive' :
+                      insight.color === 'success' ? 'text-success' :
+                      ''
+                    }`}>{insight.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {insight.message}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
-        ) : (
-          <div className="card-surface border-l-4 border-l-success">
-            <div className="flex items-start gap-3">
-              <TrendingUp className="w-5 h-5 text-success mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-success">Great Budget Management!</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  You're staying within all your budgets this month. Keep up the excellent work!
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
-        )}
-
-        {/* Investment Updates */}
-        {investments && investments.length > 0 && (
-          <div className="card-surface border-l-4 border-l-primary">
-            <div className="flex items-start gap-3">
-              <Target className="w-5 h-5 text-primary mt-0.5" />
-              <div>
-                <h3 className="font-semibold">Investment Portfolio Update</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Your portfolio has {investments.length} investment{investments.length > 1 ? 's' : ''} 
-                  totaling ${totalInvestments.toFixed(2)}. Average value per investment: ${avgInvestmentValue.toFixed(2)}.
-                  {totalInvestments < 10000 && " Consider increasing contributions to reach your long-term goals faster."}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Spending Trends */}
-        {transactions && transactions.length > 0 && (
-          <div className="card-surface border-l-4 border-l-accent">
-            <div className="flex items-start gap-3">
-              <TrendingUp className="w-5 h-5 text-accent mt-0.5" />
-              <div>
-                <h3 className="font-semibold">Monthly Activity</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  You've made {transactions.length} transaction{transactions.length > 1 ? 's' : ''} in the last 30 days. 
-                  {transactions.length > 50 && " That's quite active! Consider reviewing recurring expenses to identify savings opportunities."}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
