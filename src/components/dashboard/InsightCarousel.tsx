@@ -1,240 +1,247 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ChevronLeft, ChevronRight, Brain, TrendingUp, AlertTriangle, Lightbulb, Trophy, Info } from "lucide-react";
+import { TrendingDown, TrendingUp, Target, ChevronLeft, ChevronRight } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
-const INSIGHT_ICONS = {
-  achievement: Trophy,
-  warning: AlertTriangle,
-  alert: AlertTriangle,
-  suggestion: Lightbulb,
-  info: Info
-};
-
-const INSIGHT_COLORS = {
-  achievement: 'from-success/20 to-success/5 border-success/30',
-  warning: 'from-destructive/20 to-destructive/5 border-destructive/30',
-  alert: 'from-destructive/25 to-destructive/10 border-destructive/40',
-  suggestion: 'from-warning/20 to-warning/5 border-warning/30',
-  info: 'from-primary/20 to-primary/5 border-primary/30'
-};
-
-const INSIGHT_TEXT_COLORS = {
-  achievement: 'text-success',
-  warning: 'text-destructive',
-  alert: 'text-destructive',
-  suggestion: 'text-warning',
-  info: 'text-primary'
-};
+interface Insight {
+  type: string;
+  icon: any;
+  color: string;
+  title: string;
+  message: string;
+}
 
 export default function InsightCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAllInsights, setShowAllInsights] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  const { data: insights = [], refetch } = useQuery({
-    queryKey: ['dashboard-insights-carousel'],
+  const { data: transactions } = useQuery({
+    queryKey: ['transactions-insights'],
     queryFn: async () => {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
-      const [transactionsRes, budgetsRes, investmentsRes, mlInsightsRes] = await Promise.all([
-        supabase.from('transactions').select('*').gte('transaction_date', thirtyDaysAgo.toISOString().split('T')[0]),
-        supabase.from('budgets').select('*'),
-        supabase.from('linked_accounts').select('*').eq('account_type', 'investment').eq('is_active', true),
-        supabase.from('ml_insights').select('*').order('generated_at', { ascending: false })
-      ]);
-
-      const insights = [];
-      const transactions = transactionsRes.data || [];
-      const budgets = budgetsRes.data || [];
-      const investments = investmentsRes.data || [];
-      const mlInsights = mlInsightsRes.data || [];
-
-      // Add ML-generated insights first
-      mlInsights.forEach(insight => {
-        insights.push({
-          type: insight.insight_type,
-          title: insight.title,
-          description: insight.description,
-          confidence: insight.confidence_score
-        });
-      });
-
-      // Add real-time calculated insights
-      const categorySpending: Record<string, number> = {};
-      transactions.forEach(t => {
-        if (t.transaction_type === 'debit') {
-          categorySpending[t.category] = (categorySpending[t.category] || 0) + parseFloat(t.amount.toString());
-        }
-      });
-
-      // Budget status
-      budgets.forEach(budget => {
-        const spent = categorySpending[budget.category] || 0;
-        const limit = parseFloat(budget.limit_amount.toString());
-        const percentage = (spent / limit) * 100;
-
-        if (percentage >= 100) {
-          insights.push({
-            type: 'alert',
-            title: `🚨 ${budget.category} Budget Exceeded`,
-            description: `Over by ₹${(spent - limit).toFixed(2)} • ${percentage.toFixed(0)}% of limit`
-          });
-        } else if (percentage >= 80) {
-          insights.push({
-            type: 'warning',
-            title: `⚠️ ${budget.category} Budget Alert`,
-            description: `${percentage.toFixed(0)}% used • ₹${(limit - spent).toFixed(2)} remaining`
-          });
-        }
-      });
-
-      // Investment insights
-      if (investments.length > 0) {
-        const totalValue = investments.reduce((sum, inv) => sum + parseFloat(inv.balance.toString()), 0);
-        insights.push({
-          type: 'achievement',
-          title: '💼 Portfolio Update',
-          description: `${investments.length} investments • ₹${totalValue.toFixed(2)} total value`
-        });
-      }
-
-      return insights.length > 0 ? insights : [
-        {
-          type: 'info',
-          title: '👋 Welcome to Wealthify',
-          description: 'Add transactions to get personalized AI insights'
-        }
-      ];
+      const { data } = await supabase
+        .from('transactions')
+        .select('*')
+        .gte('transaction_date', thirtyDaysAgo.toISOString().split('T')[0]);
+      return data || [];
     },
-    refetchInterval: 10000
   });
 
+  const { data: budgets } = useQuery({
+    queryKey: ['budgets-insights'],
+    queryFn: async () => {
+      const { data } = await supabase.from('budgets').select('*');
+      return data || [];
+    },
+  });
+
+  const { data: investments } = useQuery({
+    queryKey: ['investments-insights'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('linked_accounts')
+        .select('*')
+        .eq('account_type', 'investment')
+        .eq('is_active', true);
+      return data || [];
+    },
+  });
+
+  const categorySpending = transactions?.reduce((acc: Record<string, number>, t) => {
+    if (t.transaction_type === 'debit') {
+      acc[t.category] = (acc[t.category] || 0) + parseFloat(t.amount.toString());
+    }
+    return acc;
+  }, {});
+
+  const overspendingCategories = budgets?.filter(budget => {
+    const spent = categorySpending?.[budget.category] || 0;
+    return spent > parseFloat(budget.limit_amount.toString());
+  }).map(budget => ({
+    category: budget.category,
+    spent: categorySpending?.[budget.category] || 0,
+    limit: parseFloat(budget.limit_amount.toString()),
+    overage: (categorySpending?.[budget.category] || 0) - parseFloat(budget.limit_amount.toString())
+  }));
+
+  const totalInvestments = investments?.reduce((sum, inv) => sum + parseFloat(inv.balance.toString()), 0) || 0;
+  const avgInvestmentValue = investments?.length ? totalInvestments / investments.length : 0;
+
+  const allInsights: Insight[] = [];
+
+  if (overspendingCategories && overspendingCategories.length > 0) {
+    overspendingCategories.forEach((item) => {
+      allInsights.push({
+        type: 'alert',
+        icon: TrendingDown,
+        color: 'destructive',
+        title: `Overspending Alert: ${item.category}`,
+        message: `You've spent $${item.spent.toFixed(2)} of your $${item.limit.toFixed(2)} budget — that's $${item.overage.toFixed(2)} over limit.`
+      });
+    });
+  } else {
+    allInsights.push({
+      type: 'success',
+      icon: TrendingUp,
+      color: 'success',
+      title: 'Great Budget Management!',
+      message: "You're staying within all your budgets this month. Keep up the excellent work!"
+    });
+  }
+
+  if (investments && investments.length > 0) {
+    allInsights.push({
+      type: 'info',
+      icon: Target,
+      color: 'primary',
+      title: 'Investment Portfolio Update',
+      message: `Your portfolio has ${investments.length} investment${investments.length > 1 ? 's' : ''} totaling $${totalInvestments.toFixed(2)}. Average value per investment: $${avgInvestmentValue.toFixed(2)}.${totalInvestments < 10000 ? " Consider increasing contributions to reach your long-term goals faster." : ""}`
+    });
+  }
+
+  if (transactions && transactions.length > 0) {
+    allInsights.push({
+      type: 'activity',
+      icon: TrendingUp,
+      color: 'accent',
+      title: 'Monthly Activity',
+      message: `You've made ${transactions.length} transaction${transactions.length > 1 ? 's' : ''} in the last 30 days.${transactions.length > 50 ? " That's quite active! Consider reviewing recurring expenses to identify savings opportunities." : ""}`
+    });
+  }
+
   useEffect(() => {
-    if (!isHovered && insights.length > 1) {
+    if (!isHovered && allInsights.length > 0) {
       const interval = setInterval(() => {
-        setCurrentIndex((prev) => (prev + 1) % insights.length);
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % allInsights.length);
       }, 6000);
       return () => clearInterval(interval);
     }
-  }, [insights.length, isHovered]);
+  }, [isHovered, allInsights.length]);
 
   const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + insights.length) % insights.length);
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + allInsights.length) % allInsights.length);
   };
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % insights.length);
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % allInsights.length);
   };
 
-  if (insights.length === 0) return null;
+  if (allInsights.length === 0) {
+    return null;
+  }
 
-  const currentInsight = insights[currentIndex];
-  const Icon = INSIGHT_ICONS[currentInsight.type as keyof typeof INSIGHT_ICONS] || Brain;
-  const colorClass = INSIGHT_COLORS[currentInsight.type as keyof typeof INSIGHT_COLORS] || INSIGHT_COLORS.info;
-  const textColorClass = INSIGHT_TEXT_COLORS[currentInsight.type as keyof typeof INSIGHT_TEXT_COLORS] || INSIGHT_TEXT_COLORS.info;
+  const currentInsight = allInsights[currentIndex];
+  const Icon = currentInsight.icon;
 
   return (
     <>
       <div
-        className={`relative overflow-hidden rounded-xl border bg-gradient-to-r ${colorClass} backdrop-blur-sm cursor-pointer group transition-all duration-500 hover:shadow-lg hover:scale-[1.02]`}
-        onClick={() => setShowAllInsights(true)}
+        className="insight-carousel-container group"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        onClick={() => setShowAllInsights(true)}
       >
-        <div className="p-6">
-          <div className="flex items-start gap-4">
-            <div className={`p-3 rounded-lg bg-background/50 ${textColorClass} animate-pulse-subtle`}>
-              <Icon className="w-6 h-6" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className={`font-semibold text-lg mb-1 ${textColorClass} animate-fade-in-up`}>
-                {currentInsight.title}
-              </h3>
-              <p className="text-sm text-muted-foreground animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                {currentInsight.description}
-              </p>
-            </div>
-          </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute left-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-white/10 hover:bg-white/20 text-white"
+          onClick={(e) => {
+            e.stopPropagation();
+            handlePrevious();
+          }}
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
 
-          <div className="flex items-center justify-between mt-4">
-            <div className="flex gap-1.5">
-              {insights.map((_, idx) => (
-                <div
-                  key={idx}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    idx === currentIndex ? 'w-6 bg-current opacity-100' : 'w-1.5 bg-current opacity-30'
-                  }`}
-                />
-              ))}
-            </div>
-            <span className="text-xs text-muted-foreground">Click for all insights →</span>
+        <div className="flex flex-col items-center gap-3 px-12 py-6">
+          <div className="flex items-center gap-2">
+            <Icon className={`w-5 h-5 flex-shrink-0 animate-pulse ${
+              currentInsight.color === 'destructive' ? 'text-destructive' :
+              currentInsight.color === 'success' ? 'text-success' :
+              currentInsight.color === 'primary' ? 'text-primary' :
+              'text-accent'
+            }`} />
+            <h3 className={`text-base font-semibold ${
+              currentInsight.color === 'destructive' ? 'text-destructive' :
+              currentInsight.color === 'success' ? 'text-success' :
+              'text-foreground'
+            }`}>
+              {currentInsight.title}
+            </h3>
+          </div>
+          <p className="text-sm text-muted-foreground text-center max-w-2xl">
+            {currentInsight.message}
+          </p>
+          <div className="flex items-center gap-1.5 mt-1">
+            {allInsights.map((_, idx) => (
+              <div
+                key={idx}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  idx === currentIndex ? 'w-6 bg-primary' : 'w-1.5 bg-muted-foreground/30'
+                }`}
+              />
+            ))}
           </div>
         </div>
 
-        {insights.length > 1 && (
-          <>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handlePrevious();
-              }}
-              className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleNext();
-              }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </>
-        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-white/10 hover:bg-white/20 text-white"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleNext();
+          }}
+        >
+          <ChevronRight className="w-4 h-4" />
+        </Button>
       </div>
 
       <Dialog open={showAllInsights} onOpenChange={setShowAllInsights}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto popup-animation">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Brain className="w-5 h-5 text-primary" />
-              All AI Insights
+              <TrendingUp className="w-5 h-5 text-primary" />
+              Smart Insights
             </DialogTitle>
           </DialogHeader>
-          
-          <div className="space-y-3 mt-4">
-            {insights.map((insight, idx) => {
-              const Icon = INSIGHT_ICONS[insight.type as keyof typeof INSIGHT_ICONS] || Brain;
-              const colorClass = INSIGHT_COLORS[insight.type as keyof typeof INSIGHT_COLORS] || INSIGHT_COLORS.info;
-              const textColorClass = INSIGHT_TEXT_COLORS[insight.type as keyof typeof INSIGHT_TEXT_COLORS] || INSIGHT_TEXT_COLORS.info;
 
-              return (
-                <div
-                  key={idx}
-                  className={`p-4 rounded-lg border bg-gradient-to-r ${colorClass} animate-fade-in-up`}
-                  style={{ animationDelay: `${idx * 0.05}s` }}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-lg bg-background/50 ${textColorClass}`}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className={`font-semibold mb-1 ${textColorClass}`}>
-                        {insight.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {insight.description}
-                      </p>
-                    </div>
+          <div className="space-y-3 mt-4">
+            {allInsights.map((insight, idx) => (
+              <div
+                key={idx}
+                className={`card-surface border-l-4 ${
+                  insight.color === 'destructive' ? 'border-l-destructive' :
+                  insight.color === 'success' ? 'border-l-success' :
+                  insight.color === 'primary' ? 'border-l-primary' :
+                  'border-l-accent'
+                } animate-fade-in-up`}
+                style={{ animationDelay: `${idx * 0.1}s` }}
+              >
+                <div className="flex items-start gap-3">
+                  <insight.icon className={`w-5 h-5 mt-0.5 ${
+                    insight.color === 'destructive' ? 'text-destructive' :
+                    insight.color === 'success' ? 'text-success' :
+                    insight.color === 'primary' ? 'text-primary' :
+                    'text-accent'
+                  }`} />
+                  <div>
+                    <h3 className={`font-semibold ${
+                      insight.color === 'destructive' ? 'text-destructive' :
+                      insight.color === 'success' ? 'text-success' :
+                      ''
+                    }`}>{insight.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {insight.message}
+                    </p>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </DialogContent>
       </Dialog>
