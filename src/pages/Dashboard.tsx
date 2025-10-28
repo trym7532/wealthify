@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import ExpenseChart from "../components/ExpenseChart";
 import StatDetailDialog from "../components/dashboard/StatDetailDialog";
 import InsightTooltip from "../components/InsightTooltip";
-import DashboardInsights from "../components/dashboard/DashboardInsights";
+import InsightCarousel from "../components/dashboard/InsightCarousel";
 import { TrendingUp, Wallet, PiggyBank, CreditCard, Target, DollarSign, Sparkles, TrendingDown, ArrowUpRight } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -348,8 +348,8 @@ export default function Dashboard() {
           </InsightTooltip>
         </div>
 
-        {/* Smart Insights Section */}
-        <DashboardInsights />
+        {/* Smart Insights Carousel */}
+        <InsightCarousel />
 
         {/* Goals & Budgets Overview */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
