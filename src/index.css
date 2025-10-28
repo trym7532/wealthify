@@ -188,18 +188,10 @@ All colors MUST be HSL.
   }
 
   .insight-capsule {
-    @apply bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10
-           border border-primary/20 rounded-full px-6 py-3
+    @apply bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 
+           border border-primary/20 rounded-full px-6 py-3 
            hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10
            transition-all duration-300 cursor-pointer backdrop-blur-sm;
-  }
-
-  .insight-carousel-container {
-    @apply relative bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10
-           border border-primary/20 rounded-2xl
-           hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10
-           transition-all duration-300 cursor-pointer backdrop-blur-sm
-           overflow-hidden;
   }
 
   .card-surface {

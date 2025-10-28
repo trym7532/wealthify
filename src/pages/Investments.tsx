@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 export default function Investments() {
   const [open, setOpen] = useState(false);
@@ -36,47 +35,39 @@ export default function Investments() {
     }
   });
 
-  const { data: marketData, refetch: refetchMarket } = useQuery({
-    queryKey: ['market-data'],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('get-market-data');
-      if (error) throw error;
-      return data;
-    },
-    refetchInterval: 30000,
-  });
-
-  const { data: suggestionsData, refetch: refetchSuggestions } = useQuery({
-    queryKey: ['investment-suggestions'],
-    queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Not authenticated");
-
-      const { data, error } = await supabase.functions.invoke('get-investment-suggestions', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-      if (error) throw error;
-      return data;
-    },
-    refetchInterval: 3600000,
-  });
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      refetchMarket();
-    }, 30000);
-
-    const dailyInterval = setInterval(() => {
-      refetchSuggestions();
-    }, 86400000);
-
-    return () => {
-      clearInterval(interval);
-      clearInterval(dailyInterval);
-    };
-  }, [refetchMarket, refetchSuggestions]);
+  // Mock market data - in production, this would call a real stock API
+  const marketData = {
+    nifty: { value: 21453.25, change: 145.30, changePercent: 0.68 },
+    sensex: { value: 70721.45, change: 412.75, changePercent: 0.59 },
+    topGainers: [
+      { symbol: "RELIANCE", price: 2456.30, change: 3.45, sector: "Energy" },
+      { symbol: "TCS", price: 3678.50, change: 2.89, sector: "IT" },
+      { symbol: "INFY", price: 1543.20, change: 2.12, sector: "IT" },
+    ],
+    suggestions: [
+      { 
+        stock: "HDFCBANK", 
+        reason: "Strong quarterly results with improved NIM", 
+        type: "buy",
+        target: 1850,
+        current: 1642
+      },
+      { 
+        stock: "ITC", 
+        reason: "Consistent dividend payer, stable FMCG business", 
+        type: "hold",
+        target: 485,
+        current: 462
+      },
+      { 
+        stock: "BHARTIARTL", 
+        reason: "5G rollout momentum, improving ARPU", 
+        type: "buy",
+        target: 1450,
+        current: 1287
+      },
+    ]
+  };
 
   const createMutation = useMutation({
     mutationFn: async () => {
@@ -97,7 +88,6 @@ export default function Investments() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['investments'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-accounts'] });
-      queryClient.invalidateQueries({ queryKey: ['investment-suggestions'] });
       toast({ title: "Investment account added" });
       setOpen(false);
       setAccountName("");
@@ -114,12 +104,6 @@ export default function Investments() {
     createMutation.mutate();
   };
 
-  const handleRefreshAll = () => {
-    refetchMarket();
-    refetchSuggestions();
-    toast({ title: "Refreshing market data..." });
-  };
-
   const totalValue = investments?.reduce((sum, inv) => sum + parseFloat(inv.balance.toString()), 0) || 0;
 
   if (isLoading) {
@@ -128,15 +112,9 @@ export default function Investments() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Investments</h1>
-          <p className="text-muted-foreground">Track your portfolio and market updates</p>
-        </div>
-        <Button onClick={handleRefreshAll} variant="outline" size="sm" className="gap-2">
-          <RefreshCw className="w-4 h-4" />
-          Refresh All
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold mb-2">Investments</h1>
+        <p className="text-muted-foreground">Track your portfolio and market updates</p>
       </div>
 
       {/* Market Overview */}
@@ -145,19 +123,17 @@ export default function Investments() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">NIFTY 50</p>
-              <p className="text-2xl font-bold">
-                {marketData?.nifty?.value?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '—'}
-              </p>
+              <p className="text-2xl font-bold">{marketData.nifty.value.toLocaleString()}</p>
             </div>
             <div className="text-right">
-              <div className={`flex items-center gap-1 ${(marketData?.nifty?.change || 0) >= 0 ? 'text-success' : 'text-destructive'}`}>
-                {(marketData?.nifty?.change || 0) >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+              <div className={`flex items-center gap-1 ${marketData.nifty.change >= 0 ? 'text-success' : 'text-destructive'}`}>
+                {marketData.nifty.change >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                 <span className="font-semibold">
-                  {(marketData?.nifty?.change || 0) >= 0 ? '+' : ''}{marketData?.nifty?.change?.toFixed(2) || '—'}
+                  {marketData.nifty.change >= 0 ? '+' : ''}{marketData.nifty.change.toFixed(2)}
                 </span>
               </div>
               <p className="text-sm text-muted-foreground">
-                ({(marketData?.nifty?.changePercent || 0) >= 0 ? '+' : ''}{marketData?.nifty?.changePercent?.toFixed(2) || '—'}%)
+                ({marketData.nifty.changePercent >= 0 ? '+' : ''}{marketData.nifty.changePercent.toFixed(2)}%)
               </p>
             </div>
           </div>
@@ -167,19 +143,17 @@ export default function Investments() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">SENSEX</p>
-              <p className="text-2xl font-bold">
-                {marketData?.sensex?.value?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '—'}
-              </p>
+              <p className="text-2xl font-bold">{marketData.sensex.value.toLocaleString()}</p>
             </div>
             <div className="text-right">
-              <div className={`flex items-center gap-1 ${(marketData?.sensex?.change || 0) >= 0 ? 'text-success' : 'text-destructive'}`}>
-                {(marketData?.sensex?.change || 0) >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+              <div className={`flex items-center gap-1 ${marketData.sensex.change >= 0 ? 'text-success' : 'text-destructive'}`}>
+                {marketData.sensex.change >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                 <span className="font-semibold">
-                  {(marketData?.sensex?.change || 0) >= 0 ? '+' : ''}{marketData?.sensex?.change?.toFixed(2) || '—'}
+                  {marketData.sensex.change >= 0 ? '+' : ''}{marketData.sensex.change.toFixed(2)}
                 </span>
               </div>
               <p className="text-sm text-muted-foreground">
-                ({(marketData?.sensex?.changePercent || 0) >= 0 ? '+' : ''}{marketData?.sensex?.changePercent?.toFixed(2) || '—'}%)
+                ({marketData.sensex.changePercent >= 0 ? '+' : ''}{marketData.sensex.changePercent.toFixed(2)}%)
               </p>
             </div>
           </div>
@@ -275,10 +249,13 @@ export default function Investments() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Top Gainers Today</h2>
-          <p className="text-xs text-muted-foreground">Updated every 30 seconds</p>
+          <Button variant="outline" size="sm">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
         </div>
         <div className="grid gap-3">
-          {marketData?.topGainers?.map((stock: any) => (
+          {marketData.topGainers.map((stock) => (
             <Card key={stock.symbol} className="p-4">
               <div className="flex justify-between items-center">
                 <div>
@@ -291,59 +268,33 @@ export default function Investments() {
                 </div>
               </div>
             </Card>
-          )) || <p className="text-muted-foreground text-center py-4">Loading market data...</p>}
+          ))}
         </div>
       </div>
 
+      {/* Investment Suggestions */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">AI-Powered Investment Suggestions</h2>
-          <p className="text-xs text-muted-foreground">Refreshed daily</p>
-        </div>
-        {suggestionsData?.userProfile && (
-          <Card className="p-4 bg-primary/5 border-primary/20">
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <div>
-                <p className="text-sm text-muted-foreground">Risk Profile</p>
-                <Badge variant="outline" className="mt-1 capitalize">
-                  {suggestionsData.userProfile.riskProfile}
-                </Badge>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Savings Rate</p>
-                <p className="font-semibold">{suggestionsData.userProfile.savingsRate}%</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Investments</p>
-                <p className="font-semibold">${suggestionsData.userProfile.totalInvestments.toFixed(2)}</p>
-              </div>
-            </div>
-          </Card>
-        )}
+        <h2 className="text-xl font-semibold">AI-Powered Suggestions</h2>
         <div className="grid gap-4">
-          {suggestionsData?.suggestions?.map((suggestion: any, idx: number) => (
+          {marketData.suggestions.map((suggestion, idx) => (
             <Card key={idx} className="p-4">
               <div className="space-y-3">
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
+                  <div>
+                    <div className="flex items-center gap-2">
                       <h3 className="font-semibold">{suggestion.stock}</h3>
-                      <Badge className={
-                        suggestion.type === 'buy'
-                          ? 'bg-success/10 text-success'
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        suggestion.type === 'buy' 
+                          ? 'bg-success/10 text-success' 
                           : 'bg-muted text-muted-foreground'
-                      }>
+                      }`}>
                         {suggestion.type.toUpperCase()}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {suggestion.riskLevel}
-                      </Badge>
+                      </span>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">{suggestion.name} • {suggestion.sector}</p>
-                    <p className="text-sm text-muted-foreground mt-2">{suggestion.reason}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{suggestion.reason}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-6 text-sm flex-wrap">
+                <div className="flex items-center gap-6 text-sm">
                   <div>
                     <p className="text-muted-foreground">Current</p>
                     <p className="font-semibold">₹{suggestion.current}</p>
@@ -358,14 +309,10 @@ export default function Investments() {
                       {(((suggestion.target - suggestion.current) / suggestion.current) * 100).toFixed(1)}%
                     </p>
                   </div>
-                  <div>
-                    <p className="text-muted-foreground">Time Horizon</p>
-                    <p className="font-semibold text-xs">{suggestion.timeHorizon}</p>
-                  </div>
                 </div>
               </div>
             </Card>
-          )) || <p className="text-muted-foreground text-center py-4">Loading suggestions...</p>}
+          ))}
         </div>
       </div>
     </div>
