@@ -82,7 +82,7 @@ export default function Dashboard() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
       const { data } = await supabase
-        .from('goals')
+        .from('financial_goals')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
@@ -474,7 +474,7 @@ export default function Dashboard() {
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <h4 className="font-semibold">{goal.goal_name}</h4>
-                        <p className="text-sm text-muted-foreground capitalize">{goal.category}</p>
+                        <p className="text-sm text-muted-foreground capitalize">{goal.goal_type}</p>
                       </div>
                       <div className="text-right">
                         <p className="font-bold">${parseFloat(goal.current_amount.toString()).toFixed(2)}</p>
