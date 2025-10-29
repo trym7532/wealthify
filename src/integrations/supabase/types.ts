@@ -14,7 +14,221 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      budgets: {
+        Row: {
+          category: string
+          created_at: string | null
+          id: string
+          limit_amount: number
+          period: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          id?: string
+          limit_amount: number
+          period: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          id?: string
+          limit_amount?: number
+          period?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      financial_goals: {
+        Row: {
+          created_at: string | null
+          current_amount: number | null
+          goal_name: string
+          goal_type: string
+          id: string
+          priority: string | null
+          target_amount: number
+          target_date: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_amount?: number | null
+          goal_name: string
+          goal_type: string
+          id?: string
+          priority?: string | null
+          target_amount: number
+          target_date?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_amount?: number | null
+          goal_name?: string
+          goal_type?: string
+          id?: string
+          priority?: string | null
+          target_amount?: number
+          target_date?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      linked_accounts: {
+        Row: {
+          account_name: string
+          account_type: string
+          balance: number
+          created_at: string | null
+          id: string
+          institution_name: string | null
+          is_active: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          account_name: string
+          account_type: string
+          balance?: number
+          created_at?: string | null
+          id?: string
+          institution_name?: string | null
+          is_active?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          account_name?: string
+          account_type?: string
+          balance?: number
+          created_at?: string | null
+          id?: string
+          institution_name?: string | null
+          is_active?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ml_insights: {
+        Row: {
+          action_items: string[] | null
+          confidence_score: number | null
+          created_at: string | null
+          description: string
+          generated_at: string | null
+          id: string
+          insight_type: string
+          is_read: boolean | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          action_items?: string[] | null
+          confidence_score?: number | null
+          created_at?: string | null
+          description: string
+          generated_at?: string | null
+          id?: string
+          insight_type: string
+          is_read?: boolean | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          action_items?: string[] | null
+          confidence_score?: number | null
+          created_at?: string | null
+          description?: string
+          generated_at?: string | null
+          id?: string
+          insight_type?: string
+          is_read?: boolean | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          full_name: string | null
+          has_seen_tutorial: boolean | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          full_name?: string | null
+          has_seen_tutorial?: boolean | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          full_name?: string | null
+          has_seen_tutorial?: boolean | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          account_id: string | null
+          amount: number
+          category: string
+          created_at: string | null
+          description: string | null
+          id: string
+          merchant_name: string | null
+          transaction_date: string
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          amount: number
+          category: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          merchant_name?: string | null
+          transaction_date: string
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          merchant_name?: string | null
+          transaction_date?: string
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "linked_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
