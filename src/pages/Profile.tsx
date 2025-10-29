@@ -4,11 +4,18 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
+import { Upload, User } from "lucide-react";
 
 export default function Profile() {
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [bio, setBio] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
 
   useEffect(() => {
     getProfile();
@@ -29,6 +36,9 @@ export default function Profile() {
 
       if (data) {
         setFullName(data.full_name || "");
+        setPhone(data.phone || "");
+        setBio(data.bio || "");
+        setAvatarUrl(data.avatar_url || "");
       }
     } catch (error: any) {
       toast.error(error.message);
@@ -44,16 +54,50 @@ export default function Profile() {
       const { error } = await supabase.from("profiles").upsert({
         id: user.id,
         full_name: fullName,
+        phone,
+        bio,
+        avatar_url: avatarUrl,
         updated_at: new Date().toISOString(),
       });
 
       if (error) throw error;
-
       toast.success("Profile updated successfully");
     } catch (error: any) {
       toast.error(error.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploading(true);
+
+      if (!event.target.files || event.target.files.length === 0) {
+        throw new Error("You must select an image to upload.");
+      }
+
+      const file = event.target.files[0];
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user");
+
+      const fileExt = file.name.split(".").pop();
+      const filePath = `${user.id}/${Math.random()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+      
+      setAvatarUrl(data.publicUrl);
+      toast.success("Avatar uploaded successfully");
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -66,6 +110,35 @@ export default function Profile() {
 
       <Card className="p-6">
         <div className="space-y-6">
+          {/* Avatar Upload */}
+          <div className="flex items-center gap-6">
+            <Avatar className="w-24 h-24">
+              <AvatarImage src={avatarUrl} />
+              <AvatarFallback>
+                <User className="w-12 h-12" />
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <Label htmlFor="avatar" className="cursor-pointer">
+                <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors">
+                  <Upload className="w-4 h-4" />
+                  {uploading ? "Uploading..." : "Upload Photo"}
+                </div>
+              </Label>
+              <Input
+                id="avatar"
+                type="file"
+                accept="image/*"
+                onChange={uploadAvatar}
+                disabled={uploading}
+                className="hidden"
+              />
+              <p className="text-sm text-muted-foreground mt-2">
+                JPG, PNG or GIF. Max size 5MB.
+              </p>
+            </div>
+          </div>
+
           {/* Profile Form */}
           <div className="space-y-4">
             <div className="space-y-2">
@@ -75,6 +148,28 @@ export default function Profile() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="John Doe"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+1 (555) 000-0000"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bio">Bio</Label>
+              <Textarea
+                id="bio"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="Tell us about yourself..."
+                rows={4}
               />
             </div>
           </div>

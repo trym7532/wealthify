@@ -20,8 +20,7 @@ export type Database = {
           created_at: string | null
           id: string
           limit_amount: number
-          period: string
-          updated_at: string | null
+          period: string | null
           user_id: string
         }
         Insert: {
@@ -29,8 +28,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           limit_amount: number
-          period: string
-          updated_at?: string | null
+          period?: string | null
           user_id: string
         }
         Update: {
@@ -38,8 +36,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           limit_amount?: number
-          period?: string
-          updated_at?: string | null
+          period?: string | null
           user_id?: string
         }
         Relationships: []
@@ -52,9 +49,9 @@ export type Database = {
           goal_type: string
           id: string
           priority: string | null
+          status: string | null
           target_amount: number
           target_date: string | null
-          updated_at: string | null
           user_id: string
         }
         Insert: {
@@ -64,9 +61,9 @@ export type Database = {
           goal_type: string
           id?: string
           priority?: string | null
+          status?: string | null
           target_amount: number
           target_date?: string | null
-          updated_at?: string | null
           user_id: string
         }
         Update: {
@@ -76,9 +73,45 @@ export type Database = {
           goal_type?: string
           id?: string
           priority?: string | null
+          status?: string | null
           target_amount?: number
           target_date?: string | null
-          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      goals: {
+        Row: {
+          category: string | null
+          created_at: string
+          current_amount: number | null
+          goal_name: string
+          id: string
+          target_amount: number
+          target_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          current_amount?: number | null
+          goal_name: string
+          id?: string
+          target_amount: number
+          target_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          current_amount?: number | null
+          goal_name?: string
+          id?: string
+          target_amount?: number
+          target_date?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -87,43 +120,45 @@ export type Database = {
         Row: {
           account_name: string
           account_type: string
-          balance: number
+          balance: number | null
           created_at: string | null
+          currency: string | null
           id: string
           institution_name: string | null
           is_active: boolean | null
-          updated_at: string | null
+          last_synced_at: string | null
           user_id: string
         }
         Insert: {
           account_name: string
           account_type: string
-          balance?: number
+          balance?: number | null
           created_at?: string | null
+          currency?: string | null
           id?: string
           institution_name?: string | null
           is_active?: boolean | null
-          updated_at?: string | null
+          last_synced_at?: string | null
           user_id: string
         }
         Update: {
           account_name?: string
           account_type?: string
-          balance?: number
+          balance?: number | null
           created_at?: string | null
+          currency?: string | null
           id?: string
           institution_name?: string | null
           is_active?: boolean | null
-          updated_at?: string | null
+          last_synced_at?: string | null
           user_id?: string
         }
         Relationships: []
       }
       ml_insights: {
         Row: {
-          action_items: string[] | null
+          action_items: Json | null
           confidence_score: number | null
-          created_at: string | null
           description: string
           generated_at: string | null
           id: string
@@ -133,9 +168,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          action_items?: string[] | null
+          action_items?: Json | null
           confidence_score?: number | null
-          created_at?: string | null
           description: string
           generated_at?: string | null
           id?: string
@@ -145,9 +179,8 @@ export type Database = {
           user_id: string
         }
         Update: {
-          action_items?: string[] | null
+          action_items?: Json | null
           confidence_score?: number | null
-          created_at?: string | null
           description?: string
           generated_at?: string | null
           id?: string
@@ -160,25 +193,34 @@ export type Database = {
       }
       profiles: {
         Row: {
-          created_at: string | null
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
           full_name: string | null
           has_seen_tutorial: boolean | null
           id: string
-          updated_at: string | null
+          phone: string | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
           full_name?: string | null
           has_seen_tutorial?: boolean | null
           id: string
-          updated_at?: string | null
+          phone?: string | null
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
           full_name?: string | null
           has_seen_tutorial?: boolean | null
           id?: string
-          updated_at?: string | null
+          phone?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -190,9 +232,12 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
+          is_recurring: boolean | null
           merchant_name: string | null
+          notes: string | null
+          subcategory: string | null
           transaction_date: string
-          transaction_type: string
+          transaction_type: string | null
           user_id: string
         }
         Insert: {
@@ -202,9 +247,12 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_recurring?: boolean | null
           merchant_name?: string | null
-          transaction_date: string
-          transaction_type: string
+          notes?: string | null
+          subcategory?: string | null
+          transaction_date?: string
+          transaction_type?: string | null
           user_id: string
         }
         Update: {
@@ -214,9 +262,12 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_recurring?: boolean | null
           merchant_name?: string | null
+          notes?: string | null
+          subcategory?: string | null
           transaction_date?: string
-          transaction_type?: string
+          transaction_type?: string | null
           user_id?: string
         }
         Relationships: [
