@@ -18,7 +18,6 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get user from auth header
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Missing authorization' }), {
@@ -37,26 +36,20 @@ serve(async (req) => {
       });
     }
 
-    // Fetch user's last 90 days of transactions
+    // Fetch user's financial data for comprehensive analysis
     const ninetyDaysAgo = new Date();
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
-    const { data: transactions, error: txError } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq('user_id', user.id)
-      .gte('transaction_date', ninetyDaysAgo.toISOString().split('T')[0])
-      .order('transaction_date', { ascending: false });
+    const [transactions, goals, budgets, accounts] = await Promise.all([
+      supabase.from('transactions').select('*').eq('user_id', user.id)
+        .gte('transaction_date', ninetyDaysAgo.toISOString().split('T')[0])
+        .order('transaction_date', { ascending: false }),
+      supabase.from('financial_goals').select('*').eq('user_id', user.id),
+      supabase.from('budgets').select('*').eq('user_id', user.id),
+      supabase.from('linked_accounts').select('*').eq('user_id', user.id)
+    ]);
 
-    if (txError) {
-      console.error('Error fetching transactions:', txError);
-      return new Response(JSON.stringify({ error: 'Failed to fetch transactions' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    if (!transactions || transactions.length === 0) {
+    if (transactions.error || !transactions.data || transactions.data.length === 0) {
       return new Response(JSON.stringify({ 
         insights: [],
         message: 'Not enough transaction data for analysis'
@@ -65,40 +58,109 @@ serve(async (req) => {
       });
     }
 
-    // Prepare transaction summary for AI
-    const categoryTotals = transactions.reduce((acc: any, tx: any) => {
-      acc[tx.category] = (acc[tx.category] || 0) + parseFloat(tx.amount);
-      return acc;
-    }, {});
+    // Calculate spending patterns
+    const categoryTotals: Record<string, number> = {};
+    const monthlySpending: Record<string, number> = {};
+    let totalSpending = 0;
+    let totalIncome = 0;
 
-    const totalSpending = Object.values(categoryTotals).reduce((sum: number, val: any) => sum + val, 0);
+    transactions.data.forEach((tx: any) => {
+      const amount = parseFloat(tx.amount);
+      const month = tx.transaction_date.substring(0, 7);
+      
+      if (amount < 0) {
+        categoryTotals[tx.category] = (categoryTotals[tx.category] || 0) + Math.abs(amount);
+        monthlySpending[month] = (monthlySpending[month] || 0) + Math.abs(amount);
+        totalSpending += Math.abs(amount);
+      } else {
+        totalIncome += amount;
+      }
+    });
 
-    const prompt = `You are a financial advisor AI analyzing user transactions. 
+    // Calculate budget status
+    const thisMonth = new Date().toISOString().substring(0, 7);
+    const budgetAnalysis = budgets.data?.map((budget: any) => {
+      const spent = categoryTotals[budget.category] || 0;
+      const limit = parseFloat(budget.limit_amount);
+      return {
+        category: budget.category,
+        spent,
+        limit,
+        percentage: (spent / limit) * 100,
+        overBudget: spent > limit
+      };
+    }) || [];
 
-Transaction Summary (Last 90 days):
-- Total transactions: ${transactions.length}
-- Total spending: $${totalSpending.toFixed(2)}
-- Category breakdown: ${JSON.stringify(categoryTotals, null, 2)}
+    // Calculate goal progress
+    const goalProgress = goals.data?.map((goal: any) => {
+      const current = parseFloat(goal.current_amount);
+      const target = parseFloat(goal.target_amount);
+      const progress = (current / target) * 100;
+      const remaining = target - current;
+      
+      // Calculate if on track based on target date
+      let onTrack = true;
+      if (goal.target_date) {
+        const daysToTarget = Math.ceil((new Date(goal.target_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+        const monthlyRequired = remaining / (daysToTarget / 30);
+        const currentMonthlyAverage = totalIncome - totalSpending;
+        onTrack = currentMonthlyAverage >= monthlyRequired;
+      }
+      
+      return {
+        name: goal.goal_name,
+        progress,
+        remaining,
+        onTrack,
+        target: target
+      };
+    }) || [];
 
-Recent transactions sample:
-${JSON.stringify(transactions.slice(0, 10), null, 2)}
+    const prompt = `You are an expert financial advisor AI. Analyze this user's financial data and provide 5-8 actionable insights.
 
-Analyze and provide 3-5 actionable financial insights. Return JSON with this exact structure:
+FINANCIAL DATA:
+- Total Spending (90 days): $${totalSpending.toFixed(2)}
+- Total Income (90 days): $${totalIncome.toFixed(2)}
+- Net Savings: $${(totalIncome - totalSpending).toFixed(2)}
+- Spending by Category: ${JSON.stringify(categoryTotals)}
+- Monthly Spending Trend: ${JSON.stringify(monthlySpending)}
+
+BUDGET STATUS:
+${JSON.stringify(budgetAnalysis, null, 2)}
+
+FINANCIAL GOALS:
+${JSON.stringify(goalProgress, null, 2)}
+
+ACCOUNTS:
+- Total Accounts: ${accounts.data?.length || 0}
+- Total Balance: $${accounts.data?.reduce((sum: number, acc: any) => sum + parseFloat(acc.balance), 0).toFixed(2) || 0}
+
+Provide diverse insights covering:
+1. Spending patterns and anomalies
+2. Budget alerts (over-budget warnings)
+3. Savings opportunities (where to cut costs)
+4. Goal progress tracking and predictions
+5. Behavior analysis and improvement suggestions
+6. Spending predictions and warnings
+7. Positive reinforcement for good habits
+8. Specific actionable recommendations
+
+Return JSON with this structure:
 {
   "insights": [
     {
-      "type": "spending_pattern",
+      "type": "spending_pattern|budget_alert|savings_opportunity|goal_warning|anomaly|prediction|encouragement|recommendation",
       "title": "Brief title (max 50 chars)",
       "description": "Detailed explanation (max 200 chars)",
       "confidence": 0.85,
+      "sentiment": "positive|negative|warning|neutral",
       "action_items": ["Action 1", "Action 2"]
     }
   ]
 }
 
-Valid types: spending_pattern, savings_opportunity, budget_alert, anomaly, prediction`;
+Make insights specific, actionable, and based on actual data. Use 'positive' sentiment for achievements, 'negative' for concerning patterns, 'warning' for urgent alerts, and 'neutral' for general suggestions.`;
 
-    // Call Lovable AI
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -116,8 +178,7 @@ Valid types: spending_pattern, savings_opportunity, budget_alert, anomaly, predi
     });
 
     if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error('AI API error:', aiResponse.status, errorText);
+      console.error('AI API error:', aiResponse.status, await aiResponse.text());
       return new Response(JSON.stringify({ error: 'AI analysis failed' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -127,7 +188,6 @@ Valid types: spending_pattern, savings_opportunity, budget_alert, anomaly, predi
     const aiData = await aiResponse.json();
     const content = aiData.choices[0].message.content;
     
-    // Parse AI response
     let parsedInsights;
     try {
       parsedInsights = JSON.parse(content);
@@ -140,12 +200,9 @@ Valid types: spending_pattern, savings_opportunity, budget_alert, anomaly, predi
     }
 
     // Delete old insights for this user
-    await supabase
-      .from('ml_insights')
-      .delete()
-      .eq('user_id', user.id);
+    await supabase.from('ml_insights').delete().eq('user_id', user.id);
 
-    // Store new insights in database
+    // Store new insights
     const insightsToStore = parsedInsights.insights.map((insight: any) => ({
       user_id: user.id,
       insight_type: insight.type,
@@ -153,6 +210,7 @@ Valid types: spending_pattern, savings_opportunity, budget_alert, anomaly, predi
       description: insight.description,
       confidence_score: insight.confidence,
       action_items: insight.action_items,
+      sentiment: insight.sentiment || 'neutral',
       is_read: false,
     }));
 
@@ -174,8 +232,7 @@ Valid types: spending_pattern, savings_opportunity, budget_alert, anomaly, predi
 
   } catch (error) {
     console.error('Error in generate-insights function:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

@@ -22,6 +22,7 @@ export default function InsightsSection() {
       if (error) throw error;
       return data;
     },
+    refetchInterval: 30000, // Auto-refresh every 30 seconds
   });
 
   const generateMutation = useMutation({
@@ -88,8 +89,12 @@ export default function InsightsSection() {
         <div className="text-center py-8">Loading insights...</div>
       ) : insights && insights.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {insights.map((insight) => (
-            <InsightCard key={insight.id} insight={insight} />
+          {insights.map((insight: any) => (
+            <InsightCard key={insight.id} insight={{
+              ...insight,
+              sentiment: insight.sentiment || 'neutral',
+              action_items: insight.action_items || []
+            }} />
           ))}
         </div>
       ) : (

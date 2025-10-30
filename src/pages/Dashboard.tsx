@@ -82,7 +82,7 @@ export default function Dashboard() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
       const { data } = await supabase
-        .from('goals')
+        .from('financial_goals')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
