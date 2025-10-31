@@ -4,18 +4,13 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { Upload, User } from "lucide-react";
+import { User } from "lucide-react";
 
 export default function Profile() {
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [bio, setBio] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState("");
 
   useEffect(() => {
     getProfile();
@@ -36,9 +31,6 @@ export default function Profile() {
 
       if (data) {
         setFullName(data.full_name || "");
-        setPhone(data.phone || "");
-        setBio(data.bio || "");
-        setAvatarUrl(data.avatar_url || "");
       }
     } catch (error: any) {
       toast.error(error.message);
@@ -54,9 +46,6 @@ export default function Profile() {
       const { error } = await supabase.from("profiles").upsert({
         id: user.id,
         full_name: fullName,
-        phone,
-        bio,
-        avatar_url: avatarUrl,
         updated_at: new Date().toISOString(),
       });
 

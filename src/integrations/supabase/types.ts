@@ -20,7 +20,8 @@ export type Database = {
           created_at: string | null
           id: string
           limit_amount: number
-          period: string | null
+          period: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
@@ -28,7 +29,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           limit_amount: number
-          period?: string | null
+          period: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
@@ -36,7 +38,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           limit_amount?: number
-          period?: string | null
+          period?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -49,9 +52,9 @@ export type Database = {
           goal_type: string
           id: string
           priority: string | null
-          status: string | null
           target_amount: number
           target_date: string | null
+          updated_at: string | null
           user_id: string
         }
         Insert: {
@@ -61,9 +64,9 @@ export type Database = {
           goal_type: string
           id?: string
           priority?: string | null
-          status?: string | null
           target_amount: number
           target_date?: string | null
+          updated_at?: string | null
           user_id: string
         }
         Update: {
@@ -73,45 +76,9 @@ export type Database = {
           goal_type?: string
           id?: string
           priority?: string | null
-          status?: string | null
           target_amount?: number
           target_date?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      goals: {
-        Row: {
-          category: string | null
-          created_at: string
-          current_amount: number | null
-          goal_name: string
-          id: string
-          target_amount: number
-          target_date: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          category?: string | null
-          created_at?: string
-          current_amount?: number | null
-          goal_name: string
-          id?: string
-          target_amount: number
-          target_date?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          category?: string | null
-          created_at?: string
-          current_amount?: number | null
-          goal_name?: string
-          id?: string
-          target_amount?: number
-          target_date?: string | null
-          updated_at?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -120,72 +87,75 @@ export type Database = {
         Row: {
           account_name: string
           account_type: string
-          balance: number | null
+          balance: number
           created_at: string | null
-          currency: string | null
           id: string
           institution_name: string | null
           is_active: boolean | null
-          last_synced_at: string | null
+          updated_at: string | null
           user_id: string
         }
         Insert: {
           account_name: string
           account_type: string
-          balance?: number | null
+          balance?: number
           created_at?: string | null
-          currency?: string | null
           id?: string
           institution_name?: string | null
           is_active?: boolean | null
-          last_synced_at?: string | null
+          updated_at?: string | null
           user_id: string
         }
         Update: {
           account_name?: string
           account_type?: string
-          balance?: number | null
+          balance?: number
           created_at?: string | null
-          currency?: string | null
           id?: string
           institution_name?: string | null
           is_active?: boolean | null
-          last_synced_at?: string | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
       }
       ml_insights: {
         Row: {
-          action_items: Json | null
+          action_items: string[] | null
           confidence_score: number | null
+          created_at: string | null
           description: string
           generated_at: string | null
           id: string
           insight_type: string
           is_read: boolean | null
+          sentiment: string | null
           title: string
           user_id: string
         }
         Insert: {
-          action_items?: Json | null
+          action_items?: string[] | null
           confidence_score?: number | null
+          created_at?: string | null
           description: string
           generated_at?: string | null
           id?: string
           insight_type: string
           is_read?: boolean | null
+          sentiment?: string | null
           title: string
           user_id: string
         }
         Update: {
-          action_items?: Json | null
+          action_items?: string[] | null
           confidence_score?: number | null
+          created_at?: string | null
           description?: string
           generated_at?: string | null
           id?: string
           insight_type?: string
           is_read?: boolean | null
+          sentiment?: string | null
           title?: string
           user_id?: string
         }
@@ -193,34 +163,106 @@ export type Database = {
       }
       profiles: {
         Row: {
-          avatar_url: string | null
-          bio: string | null
-          created_at: string
+          created_at: string | null
           full_name: string | null
           has_seen_tutorial: boolean | null
           id: string
-          phone: string | null
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string
+          created_at?: string | null
           full_name?: string | null
           has_seen_tutorial?: boolean | null
           id: string
-          phone?: string | null
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string
+          created_at?: string | null
           full_name?: string | null
           has_seen_tutorial?: boolean | null
           id?: string
-          phone?: string | null
-          updated_at?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      stock_suggestions: {
+        Row: {
+          action: string | null
+          confidence: number | null
+          current_price: number | null
+          expires_at: string | null
+          generated_at: string
+          id: string
+          name: string | null
+          reason: string | null
+          sentiment: string | null
+          symbol: string
+          target_price: number | null
+          user_id: string
+        }
+        Insert: {
+          action?: string | null
+          confidence?: number | null
+          current_price?: number | null
+          expires_at?: string | null
+          generated_at?: string
+          id?: string
+          name?: string | null
+          reason?: string | null
+          sentiment?: string | null
+          symbol: string
+          target_price?: number | null
+          user_id: string
+        }
+        Update: {
+          action?: string | null
+          confidence?: number | null
+          current_price?: number | null
+          expires_at?: string | null
+          generated_at?: string
+          id?: string
+          name?: string | null
+          reason?: string | null
+          sentiment?: string | null
+          symbol?: string
+          target_price?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      stocks: {
+        Row: {
+          average_price: number | null
+          created_at: string
+          current_price: number | null
+          id: string
+          last_updated: string
+          name: string | null
+          quantity: number | null
+          symbol: string
+          user_id: string
+        }
+        Insert: {
+          average_price?: number | null
+          created_at?: string
+          current_price?: number | null
+          id?: string
+          last_updated?: string
+          name?: string | null
+          quantity?: number | null
+          symbol: string
+          user_id: string
+        }
+        Update: {
+          average_price?: number | null
+          created_at?: string
+          current_price?: number | null
+          id?: string
+          last_updated?: string
+          name?: string | null
+          quantity?: number | null
+          symbol?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -232,12 +274,9 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
-          is_recurring: boolean | null
           merchant_name: string | null
-          notes: string | null
-          subcategory: string | null
           transaction_date: string
-          transaction_type: string | null
+          transaction_type: string
           user_id: string
         }
         Insert: {
@@ -247,12 +286,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
-          is_recurring?: boolean | null
           merchant_name?: string | null
-          notes?: string | null
-          subcategory?: string | null
-          transaction_date?: string
-          transaction_type?: string | null
+          transaction_date: string
+          transaction_type: string
           user_id: string
         }
         Update: {
@@ -262,12 +298,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
-          is_recurring?: boolean | null
           merchant_name?: string | null
-          notes?: string | null
-          subcategory?: string | null
           transaction_date?: string
-          transaction_type?: string | null
+          transaction_type?: string
           user_id?: string
         }
         Relationships: [

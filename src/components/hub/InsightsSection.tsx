@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,13 @@ export default function InsightsSection() {
   const { data: insights, isLoading } = useQuery({
     queryKey: ['ml-insights'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
       const { data, error } = await supabase
         .from('ml_insights')
         .select('*')
+        .eq('user_id', user.id)
         .order('generated_at', { ascending: false });
       
       if (error) throw error;
@@ -62,6 +66,19 @@ export default function InsightsSection() {
     setIsGenerating(true);
     generateMutation.mutate();
   };
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('ml-insights-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ml_insights' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['ml-insights'] });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   return (
     <div className="space-y-4">

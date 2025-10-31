@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -11,12 +11,18 @@ export default function TransactionsSection() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [dateFilter, setDateFilter] = useState("all");
 
+  const queryClient = useQueryClient();
+
   const { data: transactions, isLoading } = useQuery({
     queryKey: ['transactions', dateFilter],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
       let query = supabase
         .from('transactions')
         .select('*, linked_accounts(account_name)')
+        .eq('user_id', user.id)
         .order('transaction_date', { ascending: false });
 
       if (dateFilter === '30days') {
@@ -34,6 +40,20 @@ export default function TransactionsSection() {
       return data;
     },
   });
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('transactions-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['transactions'] });
+        queryClient.invalidateQueries({ queryKey: ['dashboard-transactions'] });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   return (
     <div className="space-y-4">

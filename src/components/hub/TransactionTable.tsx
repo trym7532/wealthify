@@ -74,7 +74,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                 {tx.linked_accounts?.account_name || 'N/A'}
               </TableCell>
               <TableCell className="text-right font-semibold">
-                <span className={parseFloat(tx.amount.toString()) >= 0 ? 'text-success' : 'text-foreground'}>
+                <span className={parseFloat(tx.amount.toString()) >= 0 ? 'text-success' : 'text-destructive'}>
                   {parseFloat(tx.amount.toString()) >= 0 ? '+' : '-'}
                   ${Math.abs(parseFloat(tx.amount.toString())).toFixed(2)}
                 </span>
