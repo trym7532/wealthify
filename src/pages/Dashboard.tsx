@@ -5,6 +5,7 @@ import ExpenseChart from "../components/ExpenseChart";
 import StatDetailDialog from "../components/dashboard/StatDetailDialog";
 import InsightTooltip from "../components/InsightTooltip";
 import InsightsCarousel from "../components/dashboard/InsightsCarousel";
+import SpendingPredictions from "../components/dashboard/SpendingPredictions";
 import { TrendingUp, Wallet, PiggyBank, CreditCard, Target, DollarSign, Sparkles, TrendingDown, ArrowUpRight } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -543,6 +544,9 @@ export default function Dashboard() {
             </div>
           </InsightTooltip>
         </div>
+
+        {/* AI Spending Predictions */}
+        <SpendingPredictions />
 
         {/* Recent Transactions */}
         <div className="card-surface">

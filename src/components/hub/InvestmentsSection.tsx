@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Plus, TrendingUp, TrendingDown } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,7 @@ export default function InvestmentsSection() {
   const [accountName, setAccountName] = useState("");
   const [balance, setBalance] = useState("");
   const [institution, setInstitution] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -34,6 +35,31 @@ export default function InvestmentsSection() {
       return data;
     }
   });
+
+  useEffect(() => {
+    // Fetch suggestions on mount if none exist or they're old
+    handleRefresh();
+  }, []);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      await supabase.functions.invoke('update-stocks', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['investments'] });
+    } catch (error) {
+      console.error('Error refreshing stocks:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const createMutation = useMutation({
     mutationFn: async () => {
@@ -78,59 +104,70 @@ export default function InvestmentsSection() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <InsightTooltip insight="Track all your investment accounts and monitor total portfolio value" showForNewUsers>
+        <InsightTooltip insight="Track all your investment accounts and monitor total portfolio value. Refreshes daily with AI-powered insights." showForNewUsers>
           <div>
             <h2 className="text-xl font-semibold">Investment Portfolio</h2>
             <p className="text-2xl font-bold mt-2">${totalValue.toFixed(2)}</p>
           </div>
         </InsightTooltip>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <InsightTooltip insight="Add your investment accounts to track portfolio growth" type="tip" showForNewUsers>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Investment
-              </Button>
-            </DialogTrigger>
-          </InsightTooltip>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Investment Account</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label>Account Name</Label>
-                <Input
-                  value={accountName}
-                  onChange={(e) => setAccountName(e.target.value)}
-                  placeholder="e.g., Vanguard 401k"
-                  required
-                />
-              </div>
-              <div>
-                <Label>Institution</Label>
-                <Input
-                  value={institution}
-                  onChange={(e) => setInstitution(e.target.value)}
-                  placeholder="e.g., Vanguard"
-                  required
-                />
-              </div>
-              <div>
-                <Label>Current Value</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={balance}
-                  onChange={(e) => setBalance(e.target.value)}
-                  placeholder="0.00"
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full">Add Investment</Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Updating...' : 'Refresh'}
+          </Button>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <InsightTooltip insight="Add your investment accounts to track portfolio growth" type="tip" showForNewUsers>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Investment
+                </Button>
+              </DialogTrigger>
+            </InsightTooltip>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Investment Account</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label>Account Name</Label>
+                  <Input
+                    value={accountName}
+                    onChange={(e) => setAccountName(e.target.value)}
+                    placeholder="e.g., Vanguard 401k"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label>Institution</Label>
+                  <Input
+                    value={institution}
+                    onChange={(e) => setInstitution(e.target.value)}
+                    placeholder="e.g., Vanguard"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label>Current Value</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={balance}
+                    onChange={(e) => setBalance(e.target.value)}
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full">Add Investment</Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="grid gap-4">

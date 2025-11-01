@@ -89,6 +89,9 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-accounts'] });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['budgets'] });
+      queryClient.invalidateQueries({ queryKey: ['budget-spending'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-budget-spending'] });
       toast({
         title: "Transaction added",
         description: "Your transaction has been recorded and balances updated",
