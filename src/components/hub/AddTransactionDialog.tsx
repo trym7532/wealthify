@@ -26,7 +26,6 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
     category: "",
     description: "",
     transaction_date: new Date().toISOString().split('T')[0],
-    notes: "",
     transaction_type: "debit" as "credit" | "debit",
   });
   const { toast } = useToast();
@@ -62,7 +61,6 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
         category: data.category,
         description: data.description,
         transaction_date: data.transaction_date,
-        notes: data.notes,
       });
       
       if (txError) throw txError;
@@ -102,7 +100,6 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
         category: "",
         description: "",
         transaction_date: new Date().toISOString().split('T')[0],
-        notes: "",
         transaction_type: "debit",
       });
     },
@@ -204,17 +201,6 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Coffee at Starbucks"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="notes">Notes (Optional)</Label>
-            <Textarea
-              id="notes"
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Additional details..."
-              rows={3}
             />
           </div>
 

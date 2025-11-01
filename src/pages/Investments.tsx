@@ -264,7 +264,9 @@ export default function Investments() {
                 </div>
                 <div className="text-right">
                   <p className="font-semibold">₹{stock.price.toFixed(2)}</p>
-                  <p className="text-sm text-success">+{stock.change.toFixed(2)}%</p>
+                  <p className={`text-sm font-semibold ${stock.change >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    {stock.change >= 0 ? '+' : ''}{stock.change.toFixed(2)}%
+                  </p>
                 </div>
               </div>
             </Card>
