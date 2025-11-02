@@ -137,21 +137,35 @@ Be specific, actionable, and realistic.`;
     });
 
     if (!aiResponse.ok) {
-      console.error('AI API error:', aiResponse.status, await aiResponse.text());
-      return new Response(JSON.stringify({ error: 'AI analysis failed' }), {
-        status: 500,
+      const text = await aiResponse.text();
+      console.error('AI API error:', aiResponse.status, text);
+      const status = aiResponse.status === 429 || aiResponse.status === 402 ? aiResponse.status : 500;
+      const body = (() => { try { return JSON.parse(text); } catch { return { error: text || 'AI analysis failed' }; } })();
+      return new Response(JSON.stringify(body), {
+        status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const aiData = await aiResponse.json();
-    const content = aiData.choices[0].message.content;
+    const rawContent = aiData.choices[0].message.content || '';
+
+    const cleanJson = (input: string) => {
+      let s = input.trim();
+      if (s.startsWith('```')) {
+        s = s.replace(/^```[a-zA-Z]*\n?/,'').replace(/```$/,'').trim();
+      }
+      const start = s.indexOf('{');
+      const end = s.lastIndexOf('}');
+      if (start !== -1 && end !== -1) s = s.slice(start, end + 1);
+      return s;
+    };
     
     let parsedPredictions;
     try {
-      parsedPredictions = JSON.parse(content);
+      parsedPredictions = JSON.parse(cleanJson(rawContent));
     } catch (parseError) {
-      console.error('Failed to parse AI response:', content);
+      console.error('Failed to parse AI response:', rawContent);
       return new Response(JSON.stringify({ error: 'Invalid AI response format' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

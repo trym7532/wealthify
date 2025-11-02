@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Sparkles, RefreshCw } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 interface Insight {
@@ -83,14 +83,17 @@ export default function InsightsCarousel() {
     }
   });
 
-  // Auto-refresh daily if last insight is older than 24h
+  // Auto-refresh daily if last insight is older than 24h (attempt once per mount)
+  const attemptedAuto = useRef(false);
   useEffect(() => {
+    if (attemptedAuto.current) return;
     if (!insights) return;
     if (generateMutation.isPending) return;
     const last = insights[0];
     const lastTime = last?.generated_at ? new Date(last.generated_at).getTime() : 0;
     const dayMs = 24 * 60 * 60 * 1000;
     if (insights.length === 0 || Date.now() - lastTime > dayMs) {
+      attemptedAuto.current = true;
       generateMutation.mutate();
     }
   }, [insights, generateMutation]);
@@ -148,8 +151,9 @@ export default function InsightsCarousel() {
   }
 
   if (!insights || insights.length === 0) {
-    // Auto-generate on first load if none
-    if (!generateMutation.isPending) {
+    // Auto-generate on first load if none (single attempt)
+    if (!generateMutation.isPending && !attemptedAuto.current) {
+      attemptedAuto.current = true;
       generateMutation.mutate();
     }
     return (

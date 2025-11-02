@@ -84,22 +84,35 @@ Be realistic and conservative. If unsure of exact percentages, provide approxima
     if (!aiResponse.ok) {
       const t = await aiResponse.text();
       console.error('AI API error:', aiResponse.status, t);
-      return new Response(JSON.stringify({ error: 'AI analysis failed' }), {
-        status: 500,
+      const status = aiResponse.status === 429 || aiResponse.status === 402 ? aiResponse.status : 500;
+      let body: any; try { body = JSON.parse(t); } catch { body = { error: t || 'AI analysis failed' }; }
+      return new Response(JSON.stringify(body), {
+        status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const aiData = await aiResponse.json();
-    const content = aiData.choices?.[0]?.message?.content || '{}';
+    const rawContent = aiData.choices?.[0]?.message?.content || '{}';
+
+    const cleanJson = (input: string) => {
+      let s = input.trim();
+      if (s.startsWith('```')) {
+        s = s.replace(/^```[a-zA-Z]*\n?/,'').replace(/```$/,'').trim();
+      }
+      const start = s.indexOf('{');
+      const end = s.lastIndexOf('}');
+      if (start !== -1 && end !== -1) s = s.slice(start, end + 1);
+      return s;
+    };
 
     try {
-      const parsed = JSON.parse(content);
+      const parsed = JSON.parse(cleanJson(rawContent));
       return new Response(JSON.stringify(parsed), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     } catch (_e) {
-      console.error('Failed to parse AI response:', content);
+      console.error('Failed to parse AI response:', rawContent);
       return new Response(JSON.stringify({ error: 'Invalid AI response format' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

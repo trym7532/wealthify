@@ -19,7 +19,7 @@ export default function InsightTooltip({
   showForNewUsers = false,
   tooltipId
 }: InsightTooltipProps) {
-  const [shouldShow, setShouldShow] = useState(true); // Hidden automatically for returning users
+  const [shouldShow, setShouldShow] = useState(false); // Hidden by default; shown only for first-time users
 
   const { data: profile } = useQuery({
     queryKey: ['user-profile-tutorial'],
@@ -38,7 +38,17 @@ export default function InsightTooltip({
 
   useEffect(() => {
     if (showForNewUsers && profile) {
-      setShouldShow(!profile.has_seen_tutorial);
+      const isNew = !profile.has_seen_tutorial;
+      setShouldShow(isNew);
+      // Mark as seen so returning users don't see tutorials again
+      if (isNew) {
+        (async () => {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await supabase.from('profiles').update({ has_seen_tutorial: true }).eq('id', user.id);
+          }
+        })();
+      }
     }
   }, [profile, showForNewUsers]);
 

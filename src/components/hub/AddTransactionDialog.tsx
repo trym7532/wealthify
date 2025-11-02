@@ -111,6 +111,21 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Decide category automatically if not provided
+      let finalCategory = data.category;
+      if (!finalCategory) {
+        const local = inferCategory(data.description);
+        if (local) finalCategory = local;
+        else {
+          try {
+            const { data: aiCat } = await supabase.functions.invoke('categorize-transaction', {
+              body: { description: data.description, amount: data.amount },
+            });
+            if (aiCat?.category) finalCategory = aiCat.category;
+          } catch {/* ignore */}
+        }
+      }
+
       const transactionAmount = data.transaction_type === 'credit' 
         ? Math.abs(parseFloat(data.amount))
         : -Math.abs(parseFloat(data.amount));
@@ -121,7 +136,7 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
         account_id: data.account_id || null,
         amount: transactionAmount,
         transaction_type: data.transaction_type,
-        category: data.category,
+        category: finalCategory || 'Other',
         description: data.description,
         transaction_date: data.transaction_date,
       });
