@@ -43,6 +43,69 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
     },
   });
 
+  const { data: userBudgets } = useQuery({
+    queryKey: ['user-budgets-categories'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [] as { category: string }[];
+      const { data, error } = await supabase
+        .from('budgets')
+        .select('category')
+        .eq('user_id', user.id);
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const combinedCategories = Array.from(new Set([...(userBudgets?.map(b => b.category) || []), ...CATEGORIES]));
+
+  const keywordMap: Record<string, string> = {
+    uber: 'Transportation', ola: 'Transportation', taxi: 'Transportation', fuel: 'Transportation', petrol: 'Transportation',
+    walmart: 'Groceries', grocery: 'Groceries', groceries: 'Groceries', costco: 'Groceries', bigbasket: 'Groceries',
+    starbucks: 'Dining', cafe: 'Dining', restaurant: 'Dining', mcdonalds: 'Dining', kfc: 'Dining',
+    netflix: 'Entertainment', spotify: 'Entertainment', prime: 'Entertainment', cinema: 'Entertainment', movie: 'Entertainment',
+    amazon: 'Shopping', flipkart: 'Shopping', myntra: 'Shopping',
+    doctor: 'Healthcare', pharmacy: 'Healthcare', chemist: 'Healthcare', hospital: 'Healthcare',
+    rent: 'Rent', landlord: 'Rent',
+    electricity: 'Utilities', internet: 'Utilities', water: 'Utilities', gas: 'Utilities', broadband: 'Utilities',
+    salary: 'Income', payroll: 'Income', deposit: 'Income',
+    invest: 'Investment', broker: 'Investment', demat: 'Investment'
+  };
+
+  const inferCategory = (text: string): string | null => {
+    const lowered = text.toLowerCase();
+    // Direct match with user's budget category names
+    const budgetHit = (userBudgets || []).find(b => lowered.includes(b.category.toLowerCase()));
+    if (budgetHit) return budgetHit.category;
+    // Keyword map
+    for (const [k, v] of Object.entries(keywordMap)) {
+      if (lowered.includes(k)) return v;
+    }
+    return null;
+  };
+
+  const suggestCategory = async () => {
+    // If user already selected a category, do not override
+    if (formData.category) return;
+    // Try local inference first
+    const local = inferCategory(formData.description);
+    if (local) {
+      setFormData(prev => ({ ...prev, category: local }));
+      return;
+    }
+    try {
+      const { data, error } = await supabase.functions.invoke('categorize-transaction', {
+        body: { description: formData.description, amount: formData.amount },
+      });
+      if (!error && data?.category) {
+        setFormData(prev => ({ ...prev, category: data.category }));
+      }
+    } catch (e) {
+      // Silent fail; user can still pick manually
+      console.warn('categorize-transaction failed', e);
+    }
+  };
+
   const addMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -163,7 +226,7 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                {CATEGORIES.map((cat) => (
+                {combinedCategories.map((cat) => (
                   <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                 ))}
               </SelectContent>
@@ -203,6 +266,9 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onBlur={async () => {
+                await suggestCategory();
+              }}
               placeholder="Coffee at Starbucks"
             />
           </div>

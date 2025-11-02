@@ -13,6 +13,7 @@ interface Insight {
   sentiment: string;
   insight_type: string;
   action_items: string[];
+  generated_at?: string;
 }
 
 export default function InsightsCarousel() {
@@ -59,6 +60,18 @@ export default function InsightsCarousel() {
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
+
+  // Auto-refresh daily if last insight is older than 24h
+  useEffect(() => {
+    if (!insights) return;
+    if (generateMutation.isPending) return;
+    const last = insights[0];
+    const lastTime = last?.generated_at ? new Date(last.generated_at).getTime() : 0;
+    const dayMs = 24 * 60 * 60 * 1000;
+    if (insights.length === 0 || Date.now() - lastTime > dayMs) {
+      generateMutation.mutate();
+    }
+  }, [insights, generateMutation]);
 
   const generateMutation = useMutation({
     mutationFn: async () => {
@@ -135,6 +148,10 @@ export default function InsightsCarousel() {
   }
 
   if (!insights || insights.length === 0) {
+    // Auto-generate on first load if none
+    if (!generateMutation.isPending) {
+      generateMutation.mutate();
+    }
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -150,11 +167,11 @@ export default function InsightsCarousel() {
             className="gap-2"
           >
             <RefreshCw className={`w-4 h-4 ${generateMutation.isPending ? 'animate-spin' : ''}`} />
-            Generate Insights
+            {generateMutation.isPending ? 'Generating…' : 'Generate'}
           </Button>
         </div>
         <Card className="p-8 text-center">
-          <p className="text-muted-foreground">No insights yet. Click "Generate Insights" to analyze your financial data.</p>
+          <p className="text-muted-foreground">Preparing your insights…</p>
         </Card>
       </div>
     );

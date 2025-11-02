@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import StockSuggestionCard from "@/components/investments/StockSuggestionCard";
+import MarketAnalysis from "@/components/investments/MarketAnalysis";
 
 export default function Investments() {
   const [open, setOpen] = useState(false);
@@ -55,8 +56,10 @@ export default function Investments() {
   });
 
   useEffect(() => {
-    // Fetch suggestions on mount if none exist
-    if (suggestions && suggestions.length === 0) {
+    // Refresh on mount if none exist or last suggestion is stale (>24h)
+    const dayMs = 24 * 60 * 60 * 1000;
+    const lastTime = suggestions?.[0]?.generated_at ? new Date(suggestions[0].generated_at).getTime() : 0;
+    if (!suggestions || suggestions.length === 0 || (Date.now() - lastTime > dayMs)) {
       handleRefresh();
     }
   }, [suggestions]);
@@ -222,6 +225,24 @@ export default function Investments() {
             </Card>
           )}
         </div>
+      </div>
+
+      {/* Market Overview (AI) */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Market Overview</h2>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Updating…' : 'Refresh All'}
+          </Button>
+        </div>
+        {/* AI Market Analysis from backend */}
+        <MarketAnalysis />
       </div>
 
       {/* AI-Powered Stock Suggestions */}

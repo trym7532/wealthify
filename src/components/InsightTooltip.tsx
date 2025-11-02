@@ -19,7 +19,7 @@ export default function InsightTooltip({
   showForNewUsers = false,
   tooltipId
 }: InsightTooltipProps) {
-  const [shouldShow, setShouldShow] = useState(true);
+  const [shouldShow, setShouldShow] = useState(true); // Hidden automatically for returning users
 
   const { data: profile } = useQuery({
     queryKey: ['user-profile-tutorial'],
