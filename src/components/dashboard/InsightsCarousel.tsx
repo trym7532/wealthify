@@ -61,18 +61,6 @@ export default function InsightsCarousel() {
     };
   }, [queryClient]);
 
-  // Auto-refresh daily if last insight is older than 24h
-  useEffect(() => {
-    if (!insights) return;
-    if (generateMutation.isPending) return;
-    const last = insights[0];
-    const lastTime = last?.generated_at ? new Date(last.generated_at).getTime() : 0;
-    const dayMs = 24 * 60 * 60 * 1000;
-    if (insights.length === 0 || Date.now() - lastTime > dayMs) {
-      generateMutation.mutate();
-    }
-  }, [insights, generateMutation]);
-
   const generateMutation = useMutation({
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -94,6 +82,18 @@ export default function InsightsCarousel() {
       console.error(error);
     }
   });
+
+  // Auto-refresh daily if last insight is older than 24h
+  useEffect(() => {
+    if (!insights) return;
+    if (generateMutation.isPending) return;
+    const last = insights[0];
+    const lastTime = last?.generated_at ? new Date(last.generated_at).getTime() : 0;
+    const dayMs = 24 * 60 * 60 * 1000;
+    if (insights.length === 0 || Date.now() - lastTime > dayMs) {
+      generateMutation.mutate();
+    }
+  }, [insights, generateMutation]);
 
   const handlePrevious = () => {
     if (!insights || insights.length === 0) return;
