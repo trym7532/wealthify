@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -30,6 +30,11 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
   });
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const [userSetCategory, setUserSetCategory] = useState(false);
+
+  const normalize = (str: string) =>
+    str.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
 
   const { data: accounts } = useQuery({
     queryKey: ['linked-accounts-select'],
@@ -73,9 +78,9 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
   };
 
   const inferCategory = (text: string): string | null => {
-    const lowered = text.toLowerCase();
+    const lowered = normalize(text);
     // Direct match with user's budget category names
-    const budgetHit = (userBudgets || []).find(b => lowered.includes(b.category.toLowerCase()));
+    const budgetHit = (userBudgets || []).find(b => lowered.includes(normalize(b.category)));
     if (budgetHit) return budgetHit.category;
     // Keyword map
     for (const [k, v] of Object.entries(keywordMap)) {
@@ -86,7 +91,7 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
 
   const suggestCategory = async () => {
     // If user already selected a category, do not override
-    if (formData.category) return;
+    if (formData.category || userSetCategory) return;
     // Try local inference first
     const local = inferCategory(formData.description);
     if (local) {
@@ -105,6 +110,16 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
       console.warn('categorize-transaction failed', e);
     }
   };
+
+  useEffect(() => {
+    if (userSetCategory) return;
+    if (!formData.description?.trim()) return;
+    const lowered = normalize(formData.description);
+    const hit = (userBudgets || []).find(b => lowered.includes(normalize(b.category)));
+    if (hit && formData.category !== hit.category) {
+      setFormData(prev => ({ ...prev, category: hit.category }));
+    }
+  }, [formData.description, userBudgets, userSetCategory]);
 
   const addMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -183,6 +198,7 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
         transaction_date: new Date().toISOString().split('T')[0],
         transaction_type: "debit",
       });
+      setUserSetCategory(false);
     },
     onError: () => {
       toast({
@@ -236,7 +252,7 @@ export default function AddTransactionDialog({ open, onOpenChange }: AddTransact
 
           <div>
             <Label htmlFor="category">Category</Label>
-            <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+            <Select value={formData.category} onValueChange={(value) => { setUserSetCategory(true); setFormData({ ...formData, category: value }); }}>
               <SelectTrigger>
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
