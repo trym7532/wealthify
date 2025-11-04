@@ -135,20 +135,38 @@ export default function Investments() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Investments</h1>
-        <p className="text-muted-foreground">Track your portfolio and market updates</p>
+    <div className="space-y-6 page-transition">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-8 border border-primary/20">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
+        <div className="relative z-10">
+          <h1 className="text-3xl font-bold mb-2 text-gradient">Investments</h1>
+          <p className="text-muted-foreground">AI-powered portfolio insights and market analysis</p>
+        </div>
       </div>
 
+      {/* Market Overview (AI) - Top Priority */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-semibold">Market Overview</h2>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Updating…' : 'Refresh Data'}
+          </Button>
+        </div>
+        <MarketAnalysis />
+      </div>
 
       {/* My Portfolio */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-semibold">My Portfolio</h2>
-            <p className="text-2xl font-bold mt-2">${totalValue.toFixed(2)}</p>
-          </div>
+          <h2 className="text-2xl font-semibold">My Portfolio</h2>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -196,6 +214,61 @@ export default function Investments() {
           </Dialog>
         </div>
 
+        <Card className="p-6 bg-gradient-to-br from-card to-card/50">
+          <div className="flex justify-between items-center mb-4">
+            <div className="text-3xl font-bold text-gradient">${totalValue.toFixed(2)}</div>
+            <TrendingUp className="w-8 h-8 text-success" />
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">Total Portfolio Value</p>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="w-full gap-2">
+                <Plus className="w-4 h-4" />
+                Add Investment Account
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Investment Account</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label>Account Name</Label>
+                  <Input
+                    value={accountName}
+                    onChange={(e) => setAccountName(e.target.value)}
+                    placeholder="e.g., Vanguard 401k"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label>Institution</Label>
+                  <Input
+                    value={institution}
+                    onChange={(e) => setInstitution(e.target.value)}
+                    placeholder="e.g., Vanguard"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label>Current Value</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={balance}
+                    onChange={(e) => setBalance(e.target.value)}
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={createMutation.isPending}>
+                  {createMutation.isPending ? 'Adding...' : 'Add Investment'}
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </Card>
+
         <div className="grid gap-4">
           {investments && investments.length > 0 ? (
             investments.map((investment) => {
@@ -203,7 +276,7 @@ export default function Investments() {
               const percentage = totalValue > 0 ? (value / totalValue) * 100 : 0;
 
               return (
-                <Card key={investment.id} className="p-4">
+                <Card key={investment.id} className="p-4 hover:shadow-lg transition-shadow">
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="font-semibold">{investment.account_name}</h3>
@@ -211,7 +284,7 @@ export default function Investments() {
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-bold">${value.toFixed(2)}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
                         {percentage.toFixed(1)}% of portfolio
                       </p>
                     </div>
@@ -220,50 +293,29 @@ export default function Investments() {
               );
             })
           ) : (
-            <Card className="p-8 text-center">
-              <p className="text-muted-foreground">No investment accounts yet. Add one to start tracking.</p>
+            <Card className="p-8 text-center border-dashed">
+              <TrendingUp className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+              <p className="text-muted-foreground mb-4">No investment accounts yet</p>
+              <Button onClick={() => setOpen(true)} variant="outline">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Your First Investment
+              </Button>
             </Card>
           )}
         </div>
       </div>
 
-      {/* Market Overview (AI) */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Market Overview</h2>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-            {isRefreshing ? 'Updating…' : 'Refresh All'}
-          </Button>
-        </div>
-        {/* AI Market Analysis from backend */}
-        <MarketAnalysis />
-      </div>
-
       {/* AI-Powered Stock Suggestions */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">AI-Powered Stock Analysis</h2>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-            {isRefreshing ? 'Analyzing...' : 'Refresh'}
-          </Button>
-        </div>
+        <h2 className="text-2xl font-semibold">AI-Powered Investment Recommendations</h2>
         
         {suggestionsLoading ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">Loading AI suggestions...</p>
-          </div>
+          <Card className="p-8 text-center">
+            <div className="animate-pulse space-y-3">
+              <div className="h-4 bg-muted rounded w-3/4 mx-auto" />
+              <div className="h-4 bg-muted rounded w-1/2 mx-auto" />
+            </div>
+          </Card>
         ) : suggestions && suggestions.length > 0 ? (
           <div className="grid gap-4">
             {suggestions.map((suggestion) => (
@@ -271,13 +323,22 @@ export default function Investments() {
             ))}
           </div>
         ) : (
-          <Card className="p-8 text-center">
-            <p className="text-muted-foreground mb-4">
-              No stock suggestions yet. Click Refresh to get AI-powered investment recommendations.
-            </p>
-            <Button onClick={handleRefresh} disabled={isRefreshing}>
-              {isRefreshing ? 'Analyzing...' : 'Get AI Suggestions'}
-            </Button>
+          <Card className="p-8 text-center border-dashed">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <TrendingUp className="w-8 h-8 text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold mb-2">Get Personalized Stock Recommendations</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Our AI analyzes your portfolio and market trends to provide tailored investment suggestions
+                </p>
+              </div>
+              <Button onClick={handleRefresh} disabled={isRefreshing} size="lg" className="gap-2">
+                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                {isRefreshing ? 'Analyzing Market...' : 'Generate AI Recommendations'}
+              </Button>
+            </div>
           </Card>
         )}
       </div>

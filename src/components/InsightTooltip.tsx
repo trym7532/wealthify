@@ -40,14 +40,15 @@ export default function InsightTooltip({
     if (showForNewUsers && profile) {
       const isNew = !profile.has_seen_tutorial;
       setShouldShow(isNew);
-      // Mark as seen so returning users don't see tutorials again
+      // Mark as seen after 3 seconds (user has had time to see the tutorial)
       if (isNew) {
-        (async () => {
+        const timer = setTimeout(async () => {
           const { data: { user } } = await supabase.auth.getUser();
           if (user) {
             await supabase.from('profiles').update({ has_seen_tutorial: true }).eq('id', user.id);
           }
-        })();
+        }, 3000);
+        return () => clearTimeout(timer);
       }
     }
   }, [profile, showForNewUsers]);
