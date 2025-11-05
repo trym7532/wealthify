@@ -68,12 +68,15 @@ export default function DashboardInsights() {
         {/* Overspending Alerts */}
         {overspendingCategories && overspendingCategories.length > 0 ? (
           overspendingCategories.map((item, idx) => (
-            <div key={idx} className="card-surface border-l-4 border-l-destructive">
-              <div className="flex items-start gap-3">
-                <TrendingDown className="w-5 h-5 text-destructive mt-0.5" />
-                <div>
-                  <h3 className="font-semibold text-destructive">Overspending Alert: {item.category}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
+            <div key={idx} className="relative bg-card rounded-lg p-5 border border-border transition-all hover:shadow-md">
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-destructive rounded-l-lg" />
+              <div className="flex items-start gap-4 pl-3">
+                <div className="p-2 bg-destructive/10 rounded-lg flex-shrink-0">
+                  <TrendingDown className="w-5 h-5 text-destructive" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-destructive mb-1">Overspending Alert: {item.category}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
                     You've spent ${item.spent.toFixed(2)} of your ${item.limit.toFixed(2)} budget 
                     — that's ${item.overage.toFixed(2)} over limit. Consider reducing expenses in this category.
                   </p>
@@ -82,12 +85,15 @@ export default function DashboardInsights() {
             </div>
           ))
         ) : (
-          <div className="card-surface border-l-4 border-l-success">
-            <div className="flex items-start gap-3">
-              <TrendingUp className="w-5 h-5 text-success mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-success">Great Budget Management!</h3>
-                <p className="text-sm text-muted-foreground mt-1">
+          <div className="relative bg-card rounded-lg p-5 border border-border transition-all hover:shadow-md">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-success rounded-l-lg" />
+            <div className="flex items-start gap-4 pl-3">
+              <div className="p-2 bg-success/10 rounded-lg flex-shrink-0">
+                <TrendingUp className="w-5 h-5 text-success" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-success mb-1">Great Budget Management!</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   You're staying within all your budgets this month. Keep up the excellent work!
                 </p>
               </div>
@@ -97,12 +103,15 @@ export default function DashboardInsights() {
 
         {/* Investment Updates */}
         {investments && investments.length > 0 && (
-          <div className="card-surface border-l-4 border-l-primary">
-            <div className="flex items-start gap-3">
-              <Target className="w-5 h-5 text-primary mt-0.5" />
-              <div>
-                <h3 className="font-semibold">Investment Portfolio Update</h3>
-                <p className="text-sm text-muted-foreground mt-1">
+          <div className="relative bg-card rounded-lg p-5 border border-border transition-all hover:shadow-md">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l-lg" />
+            <div className="flex items-start gap-4 pl-3">
+              <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
+                <Target className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold mb-1">Investment Portfolio Update</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Your portfolio has {investments.length} investment{investments.length > 1 ? 's' : ''} 
                   totaling ${totalInvestments.toFixed(2)}. Average value per investment: ${avgInvestmentValue.toFixed(2)}.
                   {totalInvestments < 10000 && " Consider increasing contributions to reach your long-term goals faster."}
@@ -114,12 +123,15 @@ export default function DashboardInsights() {
 
         {/* Spending Trends */}
         {transactions && transactions.length > 0 && (
-          <div className="card-surface border-l-4 border-l-accent">
-            <div className="flex items-start gap-3">
-              <TrendingUp className="w-5 h-5 text-accent mt-0.5" />
-              <div>
-                <h3 className="font-semibold">Monthly Activity</h3>
-                <p className="text-sm text-muted-foreground mt-1">
+          <div className="relative bg-card rounded-lg p-5 border border-border transition-all hover:shadow-md">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent rounded-l-lg" />
+            <div className="flex items-start gap-4 pl-3">
+              <div className="p-2 bg-accent/10 rounded-lg flex-shrink-0">
+                <TrendingUp className="w-5 h-5 text-accent" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold mb-1">Monthly Activity</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   You've made {transactions.length} transaction{transactions.length > 1 ? 's' : ''} in the last 30 days. 
                   {transactions.length > 50 && " That's quite active! Consider reviewing recurring expenses to identify savings opportunities."}
                 </p>

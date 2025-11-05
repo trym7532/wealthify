@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Sparkles, RefreshCw } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { SkeletonLoader } from "@/components/ui/skeleton-loader";
 
 interface Insight {
   id: string;
@@ -145,7 +146,7 @@ export default function InsightsCarousel() {
             Smart Insights
           </h2>
         </div>
-        <div className="text-muted-foreground text-center py-8">Loading insights...</div>
+        <SkeletonLoader variant="insight" count={1} />
       </div>
     );
   }
@@ -174,9 +175,14 @@ export default function InsightsCarousel() {
             {generateMutation.isPending ? 'Generating…' : 'Generate'}
           </Button>
         </div>
-        <Card className="p-8 text-center">
-          <p className="text-muted-foreground">Preparing your insights…</p>
-        </Card>
+        {generateMutation.isPending ? (
+          <SkeletonLoader variant="insight" count={1} />
+        ) : (
+          <Card className="p-8 text-center border-dashed">
+            <Sparkles className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-muted-foreground mb-4">No insights yet. Click Generate to create your first AI-powered insights.</p>
+          </Card>
+        )}
       </div>
     );
   }

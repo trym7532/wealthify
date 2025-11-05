@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Minus, Activity } from "lucide-react";
+import { SkeletonLoader } from "@/components/ui/skeleton-loader";
 
 function TrendIcon({ dir }: { dir?: string }) {
   if (dir === 'up') return <TrendingUp className="w-4 h-4 text-success" />;
@@ -36,10 +37,12 @@ export default function MarketAnalysis() {
   }, [data, refetch]);
 
   if (isLoading) return (
-    <Card className="p-8 text-center">
-      <Activity className="w-12 h-12 mx-auto mb-4 text-primary animate-pulse" />
-      <p className="text-muted-foreground">Loading market data...</p>
-    </Card>
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <SkeletonLoader variant="card" count={2} />
+      </div>
+      <SkeletonLoader variant="list" count={3} />
+    </div>
   );
   
   if (!data) return (
@@ -53,31 +56,31 @@ export default function MarketAnalysis() {
       {/* Indian Indices - Nifty & Sensex */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {data.indices?.map((idx: any) => (
-          <Card key={idx.name} className="p-6 hover:shadow-lg transition-all bg-gradient-to-br from-card to-card/50">
+          <Card key={idx.name} className="group p-6 transition-all hover:shadow-lg border-l-4 border-l-transparent hover:border-l-primary">
             <div className="flex items-start justify-between mb-4">
-              <div>
+              <div className="flex-1">
                 <h3 className="text-xl font-bold mb-1">{idx.name}</h3>
-                <p className="text-xs text-muted-foreground">{idx.summary}</p>
+                <p className="text-sm text-muted-foreground">{idx.summary}</p>
               </div>
-              <div className={`p-2 rounded-full ${
+              <div className={`p-2.5 rounded-lg transition-colors ${
                 idx.direction === 'up' 
-                  ? 'bg-success/20' 
+                  ? 'bg-success/15 text-success' 
                   : idx.direction === 'down' 
-                  ? 'bg-destructive/20' 
-                  : 'bg-muted'
+                  ? 'bg-destructive/15 text-destructive' 
+                  : 'bg-muted text-muted-foreground'
               }`}>
                 <TrendIcon dir={idx.direction} />
               </div>
             </div>
-            <div className="flex items-end gap-3">
+            <div className="flex items-center gap-3">
               <Badge 
-                variant="outline" 
-                className={`text-lg font-bold px-3 py-1 ${
+                variant="secondary" 
+                className={`text-xl font-bold px-4 py-1.5 ${
                   idx.direction === 'up' 
-                    ? 'text-success border-success bg-success/10' 
+                    ? 'bg-success/10 text-success border-success/30' 
                     : idx.direction === 'down' 
-                    ? 'text-destructive border-destructive bg-destructive/10' 
-                    : 'text-muted-foreground'
+                    ? 'bg-destructive/10 text-destructive border-destructive/30' 
+                    : 'bg-muted text-muted-foreground'
                 }`}
               >
                 {idx.change_percent != null ? `${idx.change_percent > 0 ? '+' : ''}${idx.change_percent}%` : '—'}
@@ -89,26 +92,28 @@ export default function MarketAnalysis() {
 
       {/* Today's Top Stocks */}
       {Array.isArray(data.today_top_stocks) && data.today_top_stocks.length > 0 && (
-        <Card className="p-6 bg-gradient-to-br from-card to-card/50">
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-5 h-5 text-primary" />
+        <Card className="p-6 border-l-4 border-l-success">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="p-2 bg-success/10 rounded-lg">
+              <TrendingUp className="w-5 h-5 text-success" />
+            </div>
             <h3 className="text-lg font-semibold">Today's Top Performing Stocks</h3>
           </div>
           <div className="grid gap-3">
             {data.today_top_stocks.map((s: any, i: number) => (
               <div 
                 key={`${s.symbol}-${i}`} 
-                className="flex items-center justify-between p-4 rounded-lg bg-surface hover:bg-surface/80 transition-all group"
+                className="flex items-center justify-between p-4 rounded-lg bg-surface/50 hover:bg-surface transition-all group border border-border/50"
               >
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform ${
-                    s.direction === 'up' ? 'bg-success/20' : 'bg-primary/20'
+                <div className="flex items-center gap-4 flex-1">
+                  <div className={`w-11 h-11 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform ${
+                    s.direction === 'up' ? 'bg-success/15 text-success' : 'bg-primary/15 text-primary'
                   }`}>
                     <TrendIcon dir={s.direction} />
                   </div>
-                  <div>
-                    <div className="font-semibold text-base">{s.symbol}</div>
-                    <div className="text-sm text-muted-foreground">{s.rationale}</div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-base mb-1">{s.symbol}</div>
+                    <div className="text-sm text-muted-foreground line-clamp-1">{s.rationale}</div>
                   </div>
                 </div>
               </div>
