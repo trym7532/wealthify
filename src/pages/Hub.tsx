@@ -7,12 +7,18 @@ import GoalsSection from "@/components/hub/GoalsSection";
 import InsightsSection from "@/components/hub/InsightsSection";
 import BudgetsSection from "@/components/hub/BudgetsSection";
 import InsightTooltip from "@/components/InsightTooltip";
+import { motion } from "framer-motion";
 
 export default function Hub() {
   const [activeTab, setActiveTab] = useState("accounts");
 
   return (
-    <div className="space-y-6">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6"
+    >
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Hub</h1>
@@ -76,6 +82,6 @@ export default function Hub() {
             <InsightsSection />
           </TabsContent>
         </Tabs>
-    </div>
+    </motion.div>
   );
 }

@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import StockSuggestionCard from "@/components/investments/StockSuggestionCard";
 import MarketAnalysis from "@/components/investments/MarketAnalysis";
+import { useCurrency } from "@/lib/currency";
+import { motion } from "framer-motion";
 
 export default function Investments() {
   const [open, setOpen] = useState(false);
@@ -19,6 +21,7 @@ export default function Investments() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { format } = useCurrency();
 
   const { data: investments, isLoading } = useQuery({
     queryKey: ['investments'],
@@ -135,7 +138,12 @@ export default function Investments() {
   }
 
   return (
-    <div className="space-y-6 page-transition">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6 page-transition"
+    >
       {/* Hero Section */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-8 border border-primary/20">
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
@@ -216,7 +224,7 @@ export default function Investments() {
 
         <Card className="p-6 bg-gradient-to-br from-card to-card/50">
           <div className="flex justify-between items-center mb-4">
-            <div className="text-3xl font-bold text-gradient">${totalValue.toFixed(2)}</div>
+            <div className="text-3xl font-bold text-gradient">{format(totalValue)}</div>
             <TrendingUp className="w-8 h-8 text-success" />
           </div>
           <p className="text-sm text-muted-foreground mb-4">Total Portfolio Value</p>
@@ -283,7 +291,7 @@ export default function Investments() {
                       <p className="text-sm text-muted-foreground">{investment.institution_name}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold">${value.toFixed(2)}</p>
+                      <p className="text-lg font-bold">{format(value)}</p>
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
                         {percentage.toFixed(1)}% of portfolio
                       </p>
@@ -342,6 +350,6 @@ export default function Investments() {
           </Card>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

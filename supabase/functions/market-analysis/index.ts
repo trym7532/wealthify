@@ -12,117 +12,112 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Missing authorization' }), {
+      return new Response(JSON.stringify({ error: 'No authorization header' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-
+    
     if (userError || !user) {
-      return new Response(JSON.stringify({ error: 'Invalid token' }), {
+      console.error('Auth error:', userError);
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // Fetch user's portfolio/stocks and recent suggestions
-    const [stocksRes, suggestionsRes] = await Promise.all([
-      supabase.from('stocks').select('*').eq('user_id', user.id),
-      supabase.from('stock_suggestions').select('*').eq('user_id', user.id).order('generated_at', { ascending: false }).limit(10)
-    ]);
+    console.log('Generating market analysis for user:', user.id);
 
-    const holdings = stocksRes.data || [];
-    const suggestions = suggestionsRes.data || [];
-
-    const prompt = `You are a market analyst AI. Produce a concise India-focused market snapshot and personalized notes.
-Return VALID JSON only with this schema:
-{
-  "generated_at": "ISO time",
-  "indices": [
-    { "name": "NIFTY 50", "direction": "up|down|flat", "change_percent": number, "summary": string },
-    { "name": "SENSEX", "direction": "up|down|flat", "change_percent": number, "summary": string }
-  ],
-  "portfolio": {
-    "holdings_count": number,
-    "top_movers": [ { "symbol": string, "direction": "up|down|flat", "note": string } ]
-  },
-  "today_top_stocks": [ { "symbol": string, "direction": "up|down|flat", "rationale": string } ],
-  "ai_suggestions": [ { "symbol": string, "action": "buy|hold|sell", "reason": string } ]
-}
-
-User holdings: ${JSON.stringify(holdings, null, 2)}
-Recent AI suggestions: ${JSON.stringify(suggestions, null, 2)}
-Be realistic and conservative. If unsure of exact percentages, provide approximate sensible values. JSON only.`;
-
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: 'You are a precise financial analyst. Output must be VALID JSON only.' },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.4,
-      }),
-    });
-
-    if (!aiResponse.ok) {
-      const t = await aiResponse.text();
-      console.error('AI API error:', aiResponse.status, t);
-      const status = aiResponse.status === 429 || aiResponse.status === 402 ? aiResponse.status : 500;
-      let body: any; try { body = JSON.parse(t); } catch { body = { error: t || 'AI analysis failed' }; }
-      return new Response(JSON.stringify(body), {
-        status,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const aiData = await aiResponse.json();
-    const rawContent = aiData.choices?.[0]?.message?.content || '{}';
-
-    const cleanJson = (input: string) => {
-      let s = input.trim();
-      if (s.startsWith('```')) {
-        s = s.replace(/^```[a-zA-Z]*\n?/,'').replace(/```$/,'').trim();
+    // Fetch real-time market data using Yahoo Finance API
+    const fetchYahooQuote = async (symbol: string) => {
+      try {
+        const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`);
+        const data = await response.json();
+        const result = data?.chart?.result?.[0];
+        if (!result) return null;
+        
+        const meta = result.meta;
+        const currentPrice = meta.regularMarketPrice;
+        const previousClose = meta.previousClose || meta.chartPreviousClose;
+        const change = currentPrice - previousClose;
+        const changePercent = (change / previousClose) * 100;
+        
+        return {
+          price: currentPrice,
+          change: change,
+          changePercent: changePercent,
+          direction: change > 0 ? 'up' : change < 0 ? 'down' : 'neutral'
+        };
+      } catch (error) {
+        console.error(`Error fetching quote for ${symbol}:`, error);
+        return null;
       }
-      const start = s.indexOf('{');
-      const end = s.lastIndexOf('}');
-      if (start !== -1 && end !== -1) s = s.slice(start, end + 1);
-      return s;
     };
 
-    try {
-      const parsed = JSON.parse(cleanJson(rawContent));
-      return new Response(JSON.stringify(parsed), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    } catch (_e) {
-      console.error('Failed to parse AI response:', rawContent);
-      return new Response(JSON.stringify({ error: 'Invalid AI response format' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    // Fetch real Indian market indices
+    const niftyData = await fetchYahooQuote('^NSEI'); // NIFTY 50
+    const sensexData = await fetchYahooQuote('^BSESN'); // SENSEX
+
+    // Fetch top performing Indian stocks
+    const topStocksSymbols = ['RELIANCE.NS', 'TCS.NS', 'HDFCBANK.NS', 'INFY.NS', 'HINDUNILVR.NS'];
+    const topStocksData = await Promise.all(
+      topStocksSymbols.map(async (symbol) => {
+        const data = await fetchYahooQuote(symbol);
+        return data ? { symbol: symbol.replace('.NS', ''), ...data } : null;
+      })
+    );
+
+    const validTopStocks = topStocksData.filter(s => s !== null);
+
+    // Create response with real market data
+    const response = {
+      indices: [
+        {
+          name: "NIFTY 50",
+          summary: niftyData ? `${niftyData.direction === 'up' ? 'Gained' : niftyData.direction === 'down' ? 'Declined' : 'Stable at'} ${Math.abs(niftyData.changePercent).toFixed(2)}% today` : 'Data unavailable',
+          change_percent: niftyData?.changePercent || null,
+          direction: niftyData?.direction || 'neutral'
+        },
+        {
+          name: "SENSEX",
+          summary: sensexData ? `${sensexData.direction === 'up' ? 'Gained' : sensexData.direction === 'down' ? 'Declined' : 'Stable at'} ${Math.abs(sensexData.changePercent).toFixed(2)}% today` : 'Data unavailable',
+          change_percent: sensexData?.changePercent || null,
+          direction: sensexData?.direction || 'neutral'
+        }
+      ],
+      today_top_stocks: validTopStocks.slice(0, 3).map(stock => ({
+        symbol: stock.symbol,
+        rationale: `${stock.direction === 'up' ? 'Strong performance with' : 'Notable movement of'} ${stock.changePercent > 0 ? '+' : ''}${stock.changePercent.toFixed(2)}% gain today`,
+        direction: stock.direction
+      })),
+      generated_at: new Date().toISOString()
+    };
+
+    console.log('Market analysis generated successfully');
+
+    return new Response(
+      JSON.stringify(response),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
   } catch (error) {
     console.error('market-analysis error:', error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
   }
 });

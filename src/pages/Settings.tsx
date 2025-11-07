@@ -5,16 +5,18 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Globe } from "lucide-react";
+import { useCurrency, CURRENCIES } from "@/lib/currency";
+import { motion } from "framer-motion";
 
 export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(false);
-  const [currency, setCurrency] = useState("USD");
   const [language, setLanguage] = useState("en");
   const [theme, setTheme] = useState<"light" | "dark">(
     localStorage.getItem("theme") as "light" | "dark" || "dark"
   );
+  const { currency, setCurrency } = useCurrency();
 
   useEffect(() => {
     const root = document.documentElement;
@@ -28,7 +30,12 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6"
+    >
       <div>
         <h1 className="text-3xl font-bold mb-2">Settings</h1>
         <p className="text-muted-foreground">Manage your account preferences</p>
@@ -105,19 +112,26 @@ export default function SettingsPage() {
 
         {/* Preferences */}
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Preferences</h2>
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+            <Globe className="w-5 h-5 text-primary" />
+            Preferences
+          </h2>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="currency">Default Currency</Label>
+              <p className="text-sm text-muted-foreground mb-2">
+                All financial data will be converted to your selected currency
+              </p>
               <Select value={currency} onValueChange={setCurrency}>
                 <SelectTrigger id="currency">
                   <SelectValue placeholder="Select currency" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="USD">USD ($)</SelectItem>
-                  <SelectItem value="EUR">EUR (€)</SelectItem>
-                  <SelectItem value="GBP">GBP (£)</SelectItem>
-                  <SelectItem value="JPY">JPY (¥)</SelectItem>
+                <SelectContent className="max-h-[300px]">
+                  {Object.entries(CURRENCIES).map(([code, { symbol, name }]) => (
+                    <SelectItem key={code} value={code}>
+                      {code} ({symbol}) - {name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -159,6 +173,6 @@ export default function SettingsPage() {
           Save Settings
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -9,6 +9,8 @@ import SpendingPredictions from "../components/dashboard/SpendingPredictions";
 import { TrendingUp, Wallet, PiggyBank, CreditCard, Target, DollarSign, Sparkles, TrendingDown, ArrowUpRight } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useCurrency } from "@/lib/currency";
+import { motion } from "framer-motion";
 
 export default function Dashboard() {
   const [showAllBudgets, setShowAllBudgets] = useState(false);
@@ -17,6 +19,7 @@ export default function Dashboard() {
     open: boolean;
     type: 'balance' | 'spend' | 'savings' | 'investments' | null;
   }>({ open: false, type: null });
+  const { format } = useCurrency();
 
   const { data: accounts } = useQuery({
     queryKey: ['dashboard-accounts'],
@@ -225,8 +228,26 @@ export default function Dashboard() {
 
   const userName = profile?.full_name?.split(' ')[0] || 'there';
 
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.3,
+        ease: "easeOut"
+      }
+    })
+  };
+
   return (
-    <div className="space-y-6 page-transition relative">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6 page-transition relative"
+    >
         {/* Decorative background elements */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -z-10" />
         <div className="absolute bottom-0 left-0 w-72 h-72 bg-accent/5 rounded-full blur-3xl -z-10" />
@@ -261,7 +282,7 @@ export default function Dashboard() {
                 <span className="text-muted-foreground text-sm">Total Balance</span>
                 <Wallet className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
               </div>
-              <div className="text-2xl font-bold">${totalBalance.toFixed(2)}</div>
+              <div className="text-2xl font-bold">{format(totalBalance)}</div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3" />
                 {accounts?.length || 0} accounts
@@ -287,7 +308,7 @@ export default function Dashboard() {
                 <span className="text-muted-foreground text-sm">Monthly Spend</span>
                 <CreditCard className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
               </div>
-              <div className="text-2xl font-bold">${monthlySpend.toFixed(2)}</div>
+              <div className="text-2xl font-bold">{format(monthlySpend)}</div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <TrendingDown className="w-3 h-3" />
                 {Object.keys(spendByCategory).length} categories
@@ -313,7 +334,7 @@ export default function Dashboard() {
                 <span className="text-muted-foreground text-sm">Savings</span>
                 <PiggyBank className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
               </div>
-              <div className="text-2xl font-bold">${totalSavings.toFixed(2)}</div>
+              <div className="text-2xl font-bold">{format(totalSavings)}</div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3" />
                 {savingsAccounts.length} accounts
@@ -339,7 +360,7 @@ export default function Dashboard() {
                 <span className="text-muted-foreground text-sm">Investments</span>
                 <TrendingUp className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
               </div>
-              <div className="text-2xl font-bold">${totalInvestments.toFixed(2)}</div>
+              <div className="text-2xl font-bold">{format(totalInvestments)}</div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3" />
                 {investmentAccounts.length} accounts
@@ -578,6 +599,6 @@ export default function Dashboard() {
           open={detailDialog.open}
           onOpenChange={(open) => setDetailDialog({ open, type: null })}
         />
-    </div>
+    </motion.div>
   );
 }

@@ -167,6 +167,7 @@ export type Database = {
           full_name: string | null
           has_seen_tutorial: boolean | null
           id: string
+          preferred_currency: string | null
           updated_at: string | null
         }
         Insert: {
@@ -174,6 +175,7 @@ export type Database = {
           full_name?: string | null
           has_seen_tutorial?: boolean | null
           id: string
+          preferred_currency?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -181,6 +183,7 @@ export type Database = {
           full_name?: string | null
           has_seen_tutorial?: boolean | null
           id?: string
+          preferred_currency?: string | null
           updated_at?: string | null
         }
         Relationships: []
