@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import AddGoalDialog from "./AddGoalDialog";
 import GoalCard from "./GoalCard";
 import InsightTooltip from "@/components/InsightTooltip";
+import { motion } from "framer-motion";
 
 export default function GoalsSection() {
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -40,11 +41,24 @@ export default function GoalsSection() {
       {isLoading ? (
         <div className="text-center py-8">Loading goals...</div>
       ) : goals && goals.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.1
+              }
+            }
+          }}
+        >
           {goals.map((goal) => (
             <GoalCard key={goal.id} goal={goal} />
           ))}
-        </div>
+        </motion.div>
       ) : (
         <div className="card text-center py-12">
           <p className="text-muted-foreground mb-4">No financial goals set yet</p>

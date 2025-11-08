@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import AddAccountDialog from "./AddAccountDialog";
 import AccountCard from "./AccountCard";
 import InsightTooltip from "@/components/InsightTooltip";
+import { motion } from "framer-motion";
 
 export default function AccountsSection() {
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -71,7 +72,20 @@ export default function AccountsSection() {
       </div>
 
       {accounts && accounts.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.08
+              }
+            }
+          }}
+        >
           {accounts.map((account) => (
             <AccountCard
               key={account.id}
@@ -79,7 +93,7 @@ export default function AccountsSection() {
               onDelete={() => deleteMutation.mutate(account.id)}
             />
           ))}
-        </div>
+        </motion.div>
       ) : (
         <div className="card text-center py-12">
           <p className="text-muted-foreground mb-4">No accounts linked yet</p>

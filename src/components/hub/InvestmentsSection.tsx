@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import InsightTooltip from "@/components/InsightTooltip";
+import { useCurrency } from "@/lib/currency";
+import { motion } from "framer-motion";
 
 export default function InvestmentsSection() {
   const [open, setOpen] = useState(false);
@@ -17,6 +19,7 @@ export default function InvestmentsSection() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { format } = useCurrency();
 
   const { data: investments, isLoading } = useQuery({
     queryKey: ['investments'],
@@ -107,7 +110,7 @@ export default function InvestmentsSection() {
         <InsightTooltip insight="Track all your investment accounts and monitor total portfolio value. Refreshes daily with AI-powered insights." showForNewUsers>
           <div>
             <h2 className="text-xl font-semibold">Investment Portfolio</h2>
-            <p className="text-2xl font-bold mt-2">${totalValue.toFixed(2)}</p>
+            <p className="text-2xl font-bold mt-2">{format(totalValue)}</p>
           </div>
         </InsightTooltip>
         <div className="flex gap-2">
@@ -172,25 +175,32 @@ export default function InvestmentsSection() {
 
       <div className="grid gap-4">
         {investments && investments.length > 0 ? (
-          investments.map((investment) => {
+          investments.map((investment, index) => {
             const value = parseFloat(investment.balance.toString());
             const percentage = totalValue > 0 ? (value / totalValue) * 100 : 0;
 
             return (
-              <div key={investment.id} className="card-surface">
+              <motion.div 
+                key={investment.id} 
+                className="card-surface"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.3 }}
+                whileHover={{ scale: 1.02, y: -2 }}
+              >
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-semibold">{investment.account_name}</h3>
                     <p className="text-sm text-muted-foreground">{investment.institution_name}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold">${value.toFixed(2)}</p>
+                    <p className="text-lg font-bold">{format(value)}</p>
                     <p className="text-xs text-muted-foreground">
                       {percentage.toFixed(1)}% of portfolio
                     </p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             );
           })
         ) : (

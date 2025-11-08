@@ -1,8 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { TrendingDown, TrendingUp, AlertCircle, Target } from "lucide-react";
+import { useCurrency } from "@/lib/currency";
+import { motion } from "framer-motion";
 
 export default function DashboardInsights() {
+  const { format } = useCurrency();
+  
   const { data: transactions } = useQuery({
     queryKey: ['transactions-insights'],
     queryFn: async () => {
@@ -68,7 +72,14 @@ export default function DashboardInsights() {
         {/* Overspending Alerts */}
         {overspendingCategories && overspendingCategories.length > 0 ? (
           overspendingCategories.map((item, idx) => (
-            <div key={idx} className="relative bg-card rounded-lg p-5 border border-border transition-all hover:shadow-md">
+            <motion.div 
+              key={idx} 
+              className="relative bg-card rounded-lg p-5 border border-border transition-all hover:shadow-md"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: idx * 0.1, duration: 0.3 }}
+              whileHover={{ scale: 1.01, x: 4 }}
+            >
               <div className="absolute left-0 top-0 bottom-0 w-1 bg-destructive rounded-l-lg" />
               <div className="flex items-start gap-4 pl-3">
                 <div className="p-2 bg-destructive/10 rounded-lg flex-shrink-0">
@@ -77,15 +88,21 @@ export default function DashboardInsights() {
                 <div className="flex-1">
                   <h3 className="font-semibold text-destructive mb-1">Overspending Alert: {item.category}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    You've spent ${item.spent.toFixed(2)} of your ${item.limit.toFixed(2)} budget 
-                    — that's ${item.overage.toFixed(2)} over limit. Consider reducing expenses in this category.
+                    You've spent {format(item.spent)} of your {format(item.limit)} budget 
+                    — that's {format(item.overage)} over limit. Consider reducing expenses in this category.
                   </p>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))
         ) : (
-          <div className="relative bg-card rounded-lg p-5 border border-border transition-all hover:shadow-md">
+          <motion.div 
+            className="relative bg-card rounded-lg p-5 border border-border transition-all hover:shadow-md"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+            whileHover={{ scale: 1.01, x: 4 }}
+          >
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-success rounded-l-lg" />
             <div className="flex items-start gap-4 pl-3">
               <div className="p-2 bg-success/10 rounded-lg flex-shrink-0">
@@ -98,12 +115,18 @@ export default function DashboardInsights() {
                 </p>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Investment Updates */}
         {investments && investments.length > 0 && (
-          <div className="relative bg-card rounded-lg p-5 border border-border transition-all hover:shadow-md">
+          <motion.div 
+            className="relative bg-card rounded-lg p-5 border border-border transition-all hover:shadow-md"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
+            whileHover={{ scale: 1.01, x: 4 }}
+          >
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l-lg" />
             <div className="flex items-start gap-4 pl-3">
               <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
@@ -113,17 +136,23 @@ export default function DashboardInsights() {
                 <h3 className="font-semibold mb-1">Investment Portfolio Update</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   Your portfolio has {investments.length} investment{investments.length > 1 ? 's' : ''} 
-                  totaling ${totalInvestments.toFixed(2)}. Average value per investment: ${avgInvestmentValue.toFixed(2)}.
+                  totaling {format(totalInvestments)}. Average value per investment: {format(avgInvestmentValue)}.
                   {totalInvestments < 10000 && " Consider increasing contributions to reach your long-term goals faster."}
                 </p>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Spending Trends */}
         {transactions && transactions.length > 0 && (
-          <div className="relative bg-card rounded-lg p-5 border border-border transition-all hover:shadow-md">
+          <motion.div 
+            className="relative bg-card rounded-lg p-5 border border-border transition-all hover:shadow-md"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3, duration: 0.3 }}
+            whileHover={{ scale: 1.01, x: 4 }}
+          >
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent rounded-l-lg" />
             <div className="flex items-start gap-4 pl-3">
               <div className="p-2 bg-accent/10 rounded-lg flex-shrink-0">
@@ -137,7 +166,7 @@ export default function DashboardInsights() {
                 </p>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
     </div>

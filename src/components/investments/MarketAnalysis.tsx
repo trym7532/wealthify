@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Minus, Activity } from "lucide-react";
 import { SkeletonLoader } from "@/components/ui/skeleton-loader";
+import { motion } from "framer-motion";
 
 function TrendIcon({ dir }: { dir?: string }) {
   if (dir === 'up') return <TrendingUp className="w-4 h-4 text-success" />;
@@ -55,71 +56,89 @@ export default function MarketAnalysis() {
     <div className="space-y-4">
       {/* Indian Indices - Nifty & Sensex */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {data.indices?.map((idx: any) => (
-          <Card key={idx.name} className="group p-6 transition-all hover:shadow-lg border-l-4 border-l-transparent hover:border-l-primary">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <h3 className="text-xl font-bold mb-1">{idx.name}</h3>
-                <p className="text-sm text-muted-foreground">{idx.summary}</p>
-              </div>
-              <div className={`p-2.5 rounded-lg transition-colors ${
-                idx.direction === 'up' 
-                  ? 'bg-success/15 text-success' 
-                  : idx.direction === 'down' 
-                  ? 'bg-destructive/15 text-destructive' 
-                  : 'bg-muted text-muted-foreground'
-              }`}>
-                <TrendIcon dir={idx.direction} />
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Badge 
-                variant="secondary" 
-                className={`text-xl font-bold px-4 py-1.5 ${
+        {data.indices?.map((idx: any, index: number) => (
+          <motion.div
+            key={idx.name}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: index * 0.1, duration: 0.3 }}
+            whileHover={{ scale: 1.02, y: -4 }}
+          >
+            <Card className="group p-6 transition-all hover:shadow-lg border-l-4 border-l-transparent hover:border-l-primary">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold mb-1">{idx.name}</h3>
+                  <p className="text-sm text-muted-foreground">{idx.summary}</p>
+                </div>
+                <div className={`p-2.5 rounded-lg transition-colors ${
                   idx.direction === 'up' 
-                    ? 'bg-success/10 text-success border-success/30' 
+                    ? 'bg-success/15 text-success' 
                     : idx.direction === 'down' 
-                    ? 'bg-destructive/10 text-destructive border-destructive/30' 
+                    ? 'bg-destructive/15 text-destructive' 
                     : 'bg-muted text-muted-foreground'
-                }`}
-              >
-                {idx.change_percent != null ? `${idx.change_percent > 0 ? '+' : ''}${idx.change_percent}%` : '—'}
-              </Badge>
-            </div>
-          </Card>
+                }`}>
+                  <TrendIcon dir={idx.direction} />
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Badge 
+                  variant="secondary" 
+                  className={`text-xl font-bold px-4 py-1.5 ${
+                    idx.direction === 'up' 
+                      ? 'bg-success/10 text-success border-success/30' 
+                      : idx.direction === 'down' 
+                      ? 'bg-destructive/10 text-destructive border-destructive/30' 
+                      : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {idx.change_percent != null ? `${idx.change_percent > 0 ? '+' : ''}${idx.change_percent}%` : '—'}
+                </Badge>
+              </div>
+            </Card>
+          </motion.div>
         ))}
       </div>
 
       {/* Today's Top Stocks */}
       {Array.isArray(data.today_top_stocks) && data.today_top_stocks.length > 0 && (
-        <Card className="p-6 border-l-4 border-l-success">
-          <div className="flex items-center gap-2 mb-5">
-            <div className="p-2 bg-success/10 rounded-lg">
-              <TrendingUp className="w-5 h-5 text-success" />
-            </div>
-            <h3 className="text-lg font-semibold">Today's Top Performing Stocks</h3>
-          </div>
-          <div className="grid gap-3">
-            {data.today_top_stocks.map((s: any, i: number) => (
-              <div 
-                key={`${s.symbol}-${i}`} 
-                className="flex items-center justify-between p-4 rounded-lg bg-surface/50 hover:bg-surface transition-all group border border-border/50"
-              >
-                <div className="flex items-center gap-4 flex-1">
-                  <div className={`w-11 h-11 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform ${
-                    s.direction === 'up' ? 'bg-success/15 text-success' : 'bg-primary/15 text-primary'
-                  }`}>
-                    <TrendIcon dir={s.direction} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-semibold text-base mb-1">{s.symbol}</div>
-                    <div className="text-sm text-muted-foreground line-clamp-1">{s.rationale}</div>
-                  </div>
-                </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.3 }}
+        >
+          <Card className="p-6 border-l-4 border-l-success">
+            <div className="flex items-center gap-2 mb-5">
+              <div className="p-2 bg-success/10 rounded-lg">
+                <TrendingUp className="w-5 h-5 text-success" />
               </div>
-            ))}
-          </div>
-        </Card>
+              <h3 className="text-lg font-semibold">Today's Top Performing Stocks</h3>
+            </div>
+            <div className="grid gap-3">
+              {data.today_top_stocks.map((s: any, i: number) => (
+                <motion.div 
+                  key={`${s.symbol}-${i}`} 
+                  className="flex items-center justify-between p-4 rounded-lg bg-surface/50 hover:bg-surface transition-all group border border-border/50"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + (i * 0.1), duration: 0.3 }}
+                  whileHover={{ scale: 1.01, x: 4 }}
+                >
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className={`w-11 h-11 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform ${
+                      s.direction === 'up' ? 'bg-success/15 text-success' : 'bg-primary/15 text-primary'
+                    }`}>
+                      <TrendIcon dir={s.direction} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-semibold text-base mb-1">{s.symbol}</div>
+                      <div className="text-sm text-muted-foreground line-clamp-1">{s.rationale}</div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </Card>
+        </motion.div>
       )}
 
       <div className="text-xs text-center text-muted-foreground pt-2">

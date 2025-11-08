@@ -8,12 +8,15 @@ import { Progress } from "@/components/ui/progress";
 import AddBudgetDialog from "./AddBudgetDialog";
 import EditBudgetDialog from "./EditBudgetDialog";
 import InsightTooltip from "../InsightTooltip";
+import { useCurrency } from "@/lib/currency";
+import { motion } from "framer-motion";
 
 export default function BudgetsSection() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingBudget, setEditingBudget] = useState<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { format } = useCurrency();
 
   const { data: budgets, isLoading } = useQuery({
     queryKey: ['budgets'],
@@ -91,7 +94,7 @@ export default function BudgetsSection() {
 
       <div className="grid gap-4">
         {budgets && budgets.length > 0 ? (
-          budgets.map((budget) => {
+          budgets.map((budget, index) => {
             const spent = spending?.[budget.category] || 0;
             const limit = typeof budget.limit_amount === 'string' 
               ? parseFloat(budget.limit_amount) 
@@ -109,7 +112,13 @@ export default function BudgetsSection() {
 
             return (
               <InsightTooltip key={budget.id} insight={insight.text} type={insight.type}>
-                <div className="card-surface">
+                <motion.div 
+                  className="card-surface"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1, duration: 0.3 }}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                >
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <h3 className="font-semibold">{budget.category}</h3>
@@ -136,17 +145,17 @@ export default function BudgetsSection() {
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Spent</span>
                     <span className="font-medium">
-                      ${spent.toFixed(2)} / ${limit.toFixed(2)}
+                      {format(spent)} / {format(limit)}
                     </span>
                   </div>
                   <Progress value={Math.min(percentage, 100)} />
                   {percentage > 100 && (
                     <p className="text-xs text-destructive">
-                      Over budget by ${(spent - limit).toFixed(2)}
+                      Over budget by {format(spent - limit)}
                     </p>
                   )}
                 </div>
-                </div>
+                </motion.div>
               </InsightTooltip>
             );
           })

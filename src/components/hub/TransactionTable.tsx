@@ -4,6 +4,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useCurrency } from "@/lib/currency";
+import { motion } from "framer-motion";
 
 interface TransactionTableProps {
   transactions: any[];
@@ -12,6 +14,7 @@ interface TransactionTableProps {
 export default function TransactionTable({ transactions }: TransactionTableProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { format } = useCurrency();
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -61,8 +64,14 @@ export default function TransactionTable({ transactions }: TransactionTableProps
           </TableRow>
         </TableHeader>
         <TableBody>
-          {transactions.map((tx) => (
-            <TableRow key={tx.id}>
+          {transactions.map((tx, index) => (
+            <motion.tr 
+              key={tx.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05, duration: 0.3 }}
+              className="border-b border-border hover:bg-accent/5 transition-colors"
+            >
               <TableCell>{new Date(tx.transaction_date).toLocaleDateString()}</TableCell>
               <TableCell>{tx.description || 'N/A'}</TableCell>
               <TableCell>
@@ -75,8 +84,8 @@ export default function TransactionTable({ transactions }: TransactionTableProps
               </TableCell>
               <TableCell className="text-right font-semibold">
                 <span className={parseFloat(tx.amount.toString()) >= 0 ? 'text-success' : 'text-destructive'}>
-                  {parseFloat(tx.amount.toString()) >= 0 ? '+' : '-'}
-                  ${Math.abs(parseFloat(tx.amount.toString())).toFixed(2)}
+                  {parseFloat(tx.amount.toString()) >= 0 ? '+' : ''}
+                  {format(parseFloat(tx.amount.toString()))}
                 </span>
               </TableCell>
               <TableCell>
@@ -89,7 +98,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </TableCell>
-            </TableRow>
+            </motion.tr>
           ))}
         </TableBody>
       </Table>
