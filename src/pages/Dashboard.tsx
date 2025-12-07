@@ -398,7 +398,7 @@ export default function Dashboard() {
                           <div>
                             <div className="font-medium">{goal.goal_name}</div>
                             <div className="text-xs text-muted-foreground">
-                              ${parseFloat(goal.current_amount.toString()).toFixed(2)} of ${parseFloat(goal.target_amount.toString()).toFixed(2)}
+                              {format(parseFloat(goal.current_amount.toString()))} of {format(parseFloat(goal.target_amount.toString()))}
                             </div>
                           </div>
                           <div className="text-sm font-semibold text-primary">{progress.toFixed(0)}%</div>
@@ -453,7 +453,7 @@ export default function Dashboard() {
                           <div>
                             <div className="font-medium">{budget.category}</div>
                             <div className="text-xs text-muted-foreground">
-                              ${spent.toFixed(2)} of ${limit.toFixed(2)}
+                              {format(spent)} of {format(limit)}
                             </div>
                           </div>
                           <div className={`text-sm font-semibold ${isOverBudget ? 'text-destructive' : 'text-primary'}`}>
@@ -463,7 +463,7 @@ export default function Dashboard() {
                         <Progress value={Math.min(progress, 100)} className="h-2" />
                         {isOverBudget && (
                           <div className="text-xs text-destructive mt-2 font-medium">
-                            ⚠️ Over budget by ${(spent - limit).toFixed(2)}
+                            ⚠️ Over budget by {format(spent - limit)}
                           </div>
                         )}
                       </div>
@@ -498,8 +498,8 @@ export default function Dashboard() {
                         <p className="text-sm text-muted-foreground capitalize">{goal.goal_type}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold">${parseFloat(goal.current_amount.toString()).toFixed(2)}</p>
-                        <p className="text-sm text-muted-foreground">of ${parseFloat(goal.target_amount.toString()).toFixed(2)}</p>
+                        <p className="font-bold">{format(parseFloat(goal.current_amount.toString()))}</p>
+                        <p className="text-sm text-muted-foreground">of {format(parseFloat(goal.target_amount.toString()))}</p>
                       </div>
                     </div>
                     <Progress value={progress} className="h-3" />
@@ -533,9 +533,9 @@ export default function Dashboard() {
                       </div>
                       <div className="text-right">
                         <p className={`font-bold ${isOverBudget ? 'text-destructive' : ''}`}>
-                          ${spent.toFixed(2)}
+                          {format(spent)}
                         </p>
-                        <p className="text-sm text-muted-foreground">of ${limit.toFixed(2)}</p>
+                        <p className="text-sm text-muted-foreground">of {format(limit)}</p>
                       </div>
                     </div>
                     <Progress value={Math.min(percentage, 100)} className="h-3" />
@@ -579,8 +579,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className={`font-semibold ${parseFloat(tx.amount.toString()) > 0 ? 'text-success' : 'text-foreground'}`}>
-                    {parseFloat(tx.amount.toString()) > 0 ? '+' : ''}
-                    ${Math.abs(parseFloat(tx.amount.toString())).toFixed(2)}
+                    {parseFloat(tx.amount.toString()) > 0 ? '+' : ''}{format(Math.abs(parseFloat(tx.amount.toString())))}
                   </div>
                 </div>
               ))

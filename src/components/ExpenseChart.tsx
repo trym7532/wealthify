@@ -11,6 +11,7 @@ import {
   Filler,
   ChartOptions,
 } from 'chart.js';
+import { useCurrency, CURRENCIES } from '@/lib/currency';
 
 ChartJS.register(
   CategoryScale,
@@ -33,6 +34,9 @@ interface ExpenseChartProps {
 }
 
 export default function ExpenseChart({ data = [] }: ExpenseChartProps) {
+  const { currency, format } = useCurrency();
+  const currencySymbol = CURRENCIES[currency as keyof typeof CURRENCIES]?.symbol || currency;
+  
   // Default demo data if none provided
   const demoData = data.length > 0 ? data : [
     { month: '2024-08', amount: 1450 },
@@ -84,7 +88,7 @@ export default function ExpenseChart({ data = [] }: ExpenseChartProps) {
         padding: 12,
         displayColors: false,
         callbacks: {
-          label: (context) => `$${context.parsed.y.toLocaleString()}`,
+          label: (context) => format(context.parsed.y),
         },
       },
     },
@@ -99,7 +103,7 @@ export default function ExpenseChart({ data = [] }: ExpenseChartProps) {
         },
         ticks: {
           color: 'hsl(220 9% 65%)',
-          callback: (value) => `$${value}`,
+          callback: (value) => `${currencySymbol}${value}`,
         },
       },
       x: {

@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { useCurrency } from "@/lib/currency";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -19,6 +20,8 @@ export default function StatDetailDialog({
   data,
   total 
 }: StatDetailDialogProps) {
+  const { format } = useCurrency();
+  
   const chartData = {
     labels: data.map(d => d.label),
     datasets: [{
@@ -52,7 +55,7 @@ export default function StatDetailDialog({
           label: (context: any) => {
             const value = context.parsed;
             const percentage = ((value / total) * 100).toFixed(1);
-            return `${context.label}: $${value.toFixed(2)} (${percentage}%)`;
+            return `${context.label}: ${format(value)} (${percentage}%)`;
           }
         }
       }
@@ -99,7 +102,7 @@ export default function StatDetailDialog({
                   <span className="font-medium">{item.label}</span>
                 </div>
                 <div className="text-right">
-                  <div className="font-semibold">${item.value.toFixed(2)}</div>
+                  <div className="font-semibold">{format(item.value)}</div>
                   <div className="text-xs text-muted-foreground">
                     {((item.value / total) * 100).toFixed(1)}%
                   </div>
@@ -110,7 +113,7 @@ export default function StatDetailDialog({
           <div className="border-t border-border pt-4">
             <div className="flex justify-between items-center text-lg font-bold">
               <span>Total</span>
-              <span>${total.toFixed(2)}</span>
+              <span>{format(total)}</span>
             </div>
           </div>
         </div>

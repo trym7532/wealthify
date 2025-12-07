@@ -4,9 +4,11 @@ import { Card } from "@/components/ui/card";
 import { AlertTriangle, TrendingUp, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useCurrency } from "@/lib/currency";
 
 export default function SpendingPredictions() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { format } = useCurrency();
 
   const { data: predictions, refetch } = useQuery({
     queryKey: ['spending-predictions'],
@@ -117,14 +119,14 @@ export default function SpendingPredictions() {
                     </div>
                     <div className="text-right text-sm flex-shrink-0">
                       <p className="font-semibold whitespace-nowrap">
-                        ${pred.current_spent?.toFixed(2)} / ${pred.budget_limit?.toFixed(2)}
+                        {format(pred.current_spent || 0)} / {format(pred.budget_limit || 0)}
                       </p>
                       <p className={`text-xs whitespace-nowrap ${
                         pred.predicted_total > pred.budget_limit 
                           ? 'text-destructive' 
                           : 'text-success'
                       }`}>
-                        Projected: ${pred.predicted_total?.toFixed(2)}
+                        Projected: {format(pred.predicted_total || 0)}
                       </p>
                     </div>
                   </div>
@@ -155,7 +157,7 @@ export default function SpendingPredictions() {
           <div className="flex items-center gap-3 pl-3">
             <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0" />
             <p className="text-sm font-semibold text-destructive">
-              Total Predicted Overspend: ${predictions.total_predicted_overspend.toFixed(2)}
+              Total Predicted Overspend: {format(predictions.total_predicted_overspend)}
             </p>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { TrendingUp, TrendingDown, Minus, Target } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useCurrency } from "@/lib/currency";
 
 interface StockSuggestionCardProps {
   suggestion: {
@@ -17,6 +18,7 @@ interface StockSuggestionCardProps {
 }
 
 export default function StockSuggestionCard({ suggestion }: StockSuggestionCardProps) {
+  const { format } = useCurrency();
   const getActionStyles = (action: string) => {
     switch (action.toLowerCase()) {
       case 'buy':
@@ -104,12 +106,12 @@ export default function StockSuggestionCard({ suggestion }: StockSuggestionCardP
         <div className="grid grid-cols-2 gap-4 mb-4 p-3 bg-background/50 rounded-lg">
           <div>
             <p className="text-xs text-muted-foreground mb-1">Current Price</p>
-            <p className="text-lg font-bold">${suggestion.current_price.toFixed(2)}</p>
+            <p className="text-lg font-bold">{format(suggestion.current_price)}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground mb-1">Target Price</p>
             <div className="flex items-center gap-2">
-              <p className="text-lg font-bold">${suggestion.target_price.toFixed(2)}</p>
+              <p className="text-lg font-bold">{format(suggestion.target_price)}</p>
               <Badge variant="outline" className={priceChange >= 0 ? 'text-success' : 'text-destructive'}>
                 <Target className="w-3 h-3 mr-1" />
                 {priceChange >= 0 ? '+' : ''}{priceChangePercent.toFixed(1)}%
