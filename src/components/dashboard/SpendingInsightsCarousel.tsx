@@ -144,6 +144,25 @@ export default function SpendingInsightsCarousel() {
     });
   }
 
+  // Auto-scroll functionality
+  useEffect(() => {
+    if (isHovered || capsules.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      if (!scrollRef.current) return;
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      const maxScroll = scrollWidth - clientWidth;
+      
+      if (scrollLeft >= maxScroll - 10) {
+        scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        scrollRef.current.scrollBy({ left: 320, behavior: 'smooth' });
+      }
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [isHovered, capsules.length]);
+
   if (isLoading || generateMutation.isPending) {
     return (
       <div className="space-y-3">
