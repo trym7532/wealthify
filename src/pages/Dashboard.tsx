@@ -4,8 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import ExpenseChart from "../components/ExpenseChart";
 import StatDetailDialog from "../components/dashboard/StatDetailDialog";
 import InsightTooltip from "../components/InsightTooltip";
-import InsightsCarousel from "../components/dashboard/InsightsCarousel";
-import SpendingPredictions from "../components/dashboard/SpendingPredictions";
+import SpendingInsightsCarousel from "../components/dashboard/SpendingInsightsCarousel";
 import { TrendingUp, Wallet, PiggyBank, CreditCard, Target, DollarSign, Sparkles, TrendingDown, ArrowUpRight } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -370,8 +369,8 @@ export default function Dashboard() {
           </InsightTooltip>
         </div>
 
-        {/* Smart Insights Section */}
-        <InsightsCarousel />
+        {/* AI Spending Analysis Carousel */}
+        <SpendingInsightsCarousel />
 
         {/* Goals & Budgets Overview */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -565,9 +564,6 @@ export default function Dashboard() {
             </div>
           </InsightTooltip>
         </div>
-
-        {/* AI Spending Predictions */}
-        <SpendingPredictions />
 
         {/* Recent Transactions */}
         <div className="card-surface">
