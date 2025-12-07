@@ -207,7 +207,7 @@ export default function SpendingInsightsCarousel() {
       </div>
 
       <div 
-        className="relative group"
+        className="relative group -mx-6 px-6"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
