@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, AlertTriangle, Lightbulb, CheckCircle, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { useCurrency } from "@/lib/currency";
 
 interface Prediction {
   category: string;
@@ -27,6 +28,7 @@ export default function SpendingInsightsCarousel() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const attemptedAuto = useRef(false);
+  const { format } = useCurrency();
 
   const { data: analysis, isLoading, refetch } = useQuery({
     queryKey: ['spending-analysis-carousel'],
@@ -281,7 +283,7 @@ export default function SpendingInsightsCarousel() {
                   {capsule.data.current_spent !== undefined && capsule.data.budget_limit !== undefined && (
                     <div className="flex-shrink-0 text-right">
                       <p className="text-xs font-semibold">
-                        ${capsule.data.current_spent?.toFixed(0)}/${capsule.data.budget_limit?.toFixed(0)}
+                        {format(capsule.data.current_spent)}/{format(capsule.data.budget_limit)}
                       </p>
                     </div>
                   )}
@@ -294,7 +296,7 @@ export default function SpendingInsightsCarousel() {
                     <TrendingDown className="w-4 h-4" />
                   </div>
                   <p className="text-sm font-medium text-foreground">
-                    Predicted Overspend: <span className="font-bold">${capsule.data.toFixed(2)}</span>
+                    Predicted Overspend: <span className="font-bold">{format(capsule.data)}</span>
                   </p>
                 </div>
               )}
