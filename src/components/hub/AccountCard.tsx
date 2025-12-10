@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from "@/lib/currency";
 import { motion } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AccountCardProps {
   account: any;
@@ -15,6 +16,7 @@ interface AccountCardProps {
 export default function AccountCard({ account, onDelete }: AccountCardProps) {
   const { format } = useCurrency();
   const [isFlipped, setIsFlipped] = useState(false);
+  const isMobile = useIsMobile();
   
   const { data: recentTransactions } = useQuery({
     queryKey: ['account-transactions', account.id],
@@ -40,14 +42,21 @@ export default function AccountCard({ account, onDelete }: AccountCardProps) {
     }
   };
 
+  const handleInteraction = () => {
+    if (isMobile) {
+      setIsFlipped(!isFlipped);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      onHoverStart={() => setIsFlipped(true)}
-      onHoverEnd={() => setIsFlipped(false)}
-      className="h-[200px] cursor-pointer"
+      onHoverStart={() => !isMobile && setIsFlipped(true)}
+      onHoverEnd={() => !isMobile && setIsFlipped(false)}
+      onClick={handleInteraction}
+      className="h-[180px] sm:h-[200px] cursor-pointer"
       style={{ perspective: 1000 }}
     >
       <motion.div
@@ -67,10 +76,10 @@ export default function AccountCard({ account, onDelete }: AccountCardProps) {
           style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
         >
           <Card className="h-full flex flex-col">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-4 pt-4">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 {getIcon()}
-                {account.account_name}
+                <span className="truncate max-w-[120px] sm:max-w-none">{account.account_name}</span>
               </CardTitle>
               <Button
                 variant="ghost"
@@ -79,22 +88,22 @@ export default function AccountCard({ account, onDelete }: AccountCardProps) {
                   e.stopPropagation();
                   onDelete();
                 }}
-                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col justify-center">
+            <CardContent className="flex-1 flex flex-col justify-center px-4 pb-4">
               <div className="space-y-2">
                 <motion.div 
-                  className="text-3xl font-bold"
+                  className="text-2xl sm:text-3xl font-bold"
                   initial={{ scale: 0.8 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.1 }}
                 >
                   {format(parseFloat(account.balance))}
                 </motion.div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-xs sm:text-sm text-muted-foreground truncate">
                   {account.institution_name || 'No bank specified'}
                 </div>
                 <div className="inline-block px-2 py-1 rounded-md bg-surface text-xs capitalize">
@@ -102,6 +111,11 @@ export default function AccountCard({ account, onDelete }: AccountCardProps) {
                 </div>
               </div>
             </CardContent>
+            {isMobile && (
+              <div className="absolute bottom-2 right-2 text-xs text-muted-foreground">
+                Tap to flip
+              </div>
+            )}
           </Card>
         </div>
 
@@ -115,23 +129,23 @@ export default function AccountCard({ account, onDelete }: AccountCardProps) {
           }}
         >
           <Card className="h-full flex flex-col">
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2 px-4 pt-4">
               <CardTitle className="text-sm font-medium">Recent Transactions</CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 overflow-hidden">
+            <CardContent className="flex-1 overflow-hidden px-4 pb-4">
               <div className="space-y-2">
                 {recentTransactions && recentTransactions.length > 0 ? (
-                  recentTransactions.slice(0, 4).map((tx) => (
+                  recentTransactions.slice(0, 3).map((tx) => (
                     <div key={tx.id} className="flex items-center justify-between text-xs border-b border-border/50 pb-2 last:border-0">
                       <div className="flex items-center gap-2">
                         {tx.transaction_type === 'expense' ? (
-                          <ArrowDownRight className="w-3 h-3 text-destructive" />
+                          <ArrowDownRight className="w-3 h-3 text-destructive shrink-0" />
                         ) : (
-                          <ArrowUpRight className="w-3 h-3 text-success" />
+                          <ArrowUpRight className="w-3 h-3 text-success shrink-0" />
                         )}
-                        <span className="truncate max-w-[100px]">{tx.description || tx.category}</span>
+                        <span className="truncate max-w-[80px] sm:max-w-[100px]">{tx.description || tx.category}</span>
                       </div>
-                      <span className={tx.transaction_type === 'expense' ? 'text-destructive' : 'text-success'}>
+                      <span className={`shrink-0 ${tx.transaction_type === 'expense' ? 'text-destructive' : 'text-success'}`}>
                         {format(tx.amount)}
                       </span>
                     </div>
@@ -143,6 +157,11 @@ export default function AccountCard({ account, onDelete }: AccountCardProps) {
                 )}
               </div>
             </CardContent>
+            {isMobile && (
+              <div className="absolute bottom-2 right-2 text-xs text-muted-foreground">
+                Tap to flip
+              </div>
+            )}
           </Card>
         </div>
       </motion.div>

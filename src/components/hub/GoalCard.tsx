@@ -9,7 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import EditGoalDialog from "./EditGoalDialog";
 import InsightTooltip from "../InsightTooltip";
 import { useCurrency } from "@/lib/currency";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface GoalCardProps {
   goal: any;
@@ -21,6 +22,8 @@ export default function GoalCard({ goal }: GoalCardProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const { format } = useCurrency();
+  const isMobile = useIsMobile();
+  
   const progress = (parseFloat(goal.current_amount) / parseFloat(goal.target_amount)) * 100;
   const remaining = parseFloat(goal.target_amount) - parseFloat(goal.current_amount);
   const daysLeft = goal.target_date 
@@ -63,10 +66,16 @@ export default function GoalCard({ goal }: GoalCardProps) {
 
   const getPriorityColor = () => {
     switch (goal.priority) {
-      case 'high': return 'text-error';
-      case 'medium': return 'text-accent';
+      case 'high': return 'text-destructive';
+      case 'medium': return 'text-warning';
       case 'low': return 'text-muted-foreground';
       default: return 'text-muted-foreground';
+    }
+  };
+
+  const handleInteraction = () => {
+    if (isMobile) {
+      setIsFlipped(!isFlipped);
     }
   };
 
@@ -77,9 +86,10 @@ export default function GoalCard({ goal }: GoalCardProps) {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3 }}
-          onHoverStart={() => setIsFlipped(true)}
-          onHoverEnd={() => setIsFlipped(false)}
-          className="h-[280px] cursor-pointer"
+          onHoverStart={() => !isMobile && setIsFlipped(true)}
+          onHoverEnd={() => !isMobile && setIsFlipped(false)}
+          onClick={handleInteraction}
+          className="h-[240px] sm:h-[280px] cursor-pointer"
           style={{ perspective: 1000 }}
         >
           <motion.div
@@ -98,17 +108,20 @@ export default function GoalCard({ goal }: GoalCardProps) {
               className="absolute inset-0 w-full h-full"
               style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
             >
-              <Card className="h-full">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <Card className="h-full flex flex-col">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-4 pt-4">
                   <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Target className="w-4 h-4" />
-                    {goal.goal_name}
+                    <Target className="w-4 h-4 shrink-0" />
+                    <span className="truncate max-w-[100px] sm:max-w-none">{goal.goal_name}</span>
                   </CardTitle>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 shrink-0">
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => setShowEditDialog(true)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowEditDialog(true);
+                      }}
                       className="h-8 w-8 text-muted-foreground hover:text-primary"
                     >
                       <Edit className="w-4 h-4" />
@@ -116,21 +129,24 @@ export default function GoalCard({ goal }: GoalCardProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => deleteMutation.mutate()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteMutation.mutate();
+                      }}
                       className="h-8 w-8 text-muted-foreground hover:text-destructive"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3 sm:space-y-4 px-4 pb-4 flex-1">
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Progress</span>
                       <span className="font-semibold">{progress.toFixed(0)}%</span>
                     </div>
                     <Progress value={progress} className="h-2" />
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-xs sm:text-sm">
                       <span className="text-muted-foreground">
                         {format(parseFloat(goal.current_amount))}
                       </span>
@@ -141,7 +157,7 @@ export default function GoalCard({ goal }: GoalCardProps) {
                   </div>
 
                   <div className="flex items-center justify-between text-xs">
-                    <span className="px-2 py-1 rounded-md bg-surface capitalize">
+                    <span className="px-2 py-1 rounded-md bg-surface capitalize truncate max-w-[80px] sm:max-w-none">
                       {goal.goal_type.replace('_', ' ')}
                     </span>
                     <span className={`font-semibold capitalize ${getPriorityColor()}`}>
@@ -155,6 +171,11 @@ export default function GoalCard({ goal }: GoalCardProps) {
                     </div>
                   )}
                 </CardContent>
+                {isMobile && (
+                  <div className="absolute bottom-2 right-2 text-xs text-muted-foreground">
+                    Tap to flip
+                  </div>
+                )}
               </Card>
             </div>
 
@@ -167,22 +188,22 @@ export default function GoalCard({ goal }: GoalCardProps) {
                 transform: "rotateY(180deg)"
               }}
             >
-              <Card className="h-full">
-                <CardHeader className="pb-3">
+              <Card className="h-full flex flex-col">
+                <CardHeader className="pb-3 px-4 pt-4">
                   <CardTitle className="text-sm font-medium">Performance Metrics</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-3 px-4 pb-4 flex-1">
                   <div className="flex items-center gap-3 text-sm">
-                    <TrendingUp className="w-4 h-4 text-primary" />
-                    <div className="flex-1">
+                    <TrendingUp className="w-4 h-4 text-primary shrink-0" />
+                    <div className="flex-1 min-w-0">
                       <p className="text-xs text-muted-foreground">Remaining</p>
-                      <p className="font-semibold">{format(remaining)}</p>
+                      <p className="font-semibold truncate">{format(remaining)}</p>
                     </div>
                   </div>
 
                   {daysLeft !== null && (
                     <div className="flex items-center gap-3 text-sm">
-                      <Calendar className="w-4 h-4 text-primary" />
+                      <Calendar className="w-4 h-4 text-primary shrink-0" />
                       <div className="flex-1">
                         <p className="text-xs text-muted-foreground">Days Left</p>
                         <p className="font-semibold">
@@ -193,7 +214,7 @@ export default function GoalCard({ goal }: GoalCardProps) {
                   )}
 
                   <div className="flex items-center gap-3 text-sm">
-                    <Flag className="w-4 h-4 text-primary" />
+                    <Flag className="w-4 h-4 text-primary shrink-0" />
                     <div className="flex-1">
                       <p className="text-xs text-muted-foreground">Completion Rate</p>
                       <p className="font-semibold">{progress.toFixed(1)}%</p>
@@ -217,6 +238,11 @@ export default function GoalCard({ goal }: GoalCardProps) {
                     </p>
                   </div>
                 </CardContent>
+                {isMobile && (
+                  <div className="absolute bottom-2 right-2 text-xs text-muted-foreground">
+                    Tap to flip
+                  </div>
+                )}
               </Card>
             </div>
           </motion.div>

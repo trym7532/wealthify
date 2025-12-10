@@ -9,7 +9,7 @@ export default function FloatingActionButton({ onClick }: FloatingActionButtonPr
   return (
     <Button
       onClick={onClick}
-      className="fixed bottom-6 right-6 w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-lg gradient-primary hover:shadow-[var(--shadow-glow)] hover:scale-110 transition-transform z-[100] p-0"
+      className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-lg gradient-primary hover:shadow-[var(--shadow-glow)] hover:scale-110 active:scale-95 transition-transform z-[100] p-0 touch-manipulation"
       aria-label="Quick actions"
     >
       <Plus className="w-6 h-6 sm:w-7 sm:h-7 text-background" />

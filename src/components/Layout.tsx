@@ -1,5 +1,6 @@
 import { ReactNode, useState, useEffect } from "react";
 import Navbar from "./Navbar";
+import MobileBottomNav from "./MobileBottomNav";
 import FloatingActionButton from "./FloatingActionButton";
 import QuickActionWidget from "./QuickActionWidget";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,11 +29,12 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-background text-foreground finance-pattern-bg">
       <Navbar />
-      <main className="p-4 sm:p-6 max-w-7xl mx-auto relative z-10 pb-24">{children}</main>
+      <main className="p-4 sm:p-6 max-w-7xl mx-auto relative z-10 pb-28 sm:pb-24">{children}</main>
       {user && (
         <>
           <FloatingActionButton onClick={() => setQuickActionOpen(true)} />
           <QuickActionWidget open={quickActionOpen} onOpenChange={setQuickActionOpen} />
+          <MobileBottomNav />
         </>
       )}
     </div>
