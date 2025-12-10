@@ -5,7 +5,7 @@ import { Trash2, CreditCard, Wallet, TrendingUp, Building, ArrowUpRight, ArrowDo
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from "@/lib/currency";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface AccountCardProps {
   account: any;
@@ -47,21 +47,26 @@ export default function AccountCard({ account, onDelete }: AccountCardProps) {
       transition={{ duration: 0.3 }}
       onHoverStart={() => setIsFlipped(true)}
       onHoverEnd={() => setIsFlipped(false)}
+      className="h-[200px] cursor-pointer"
       style={{ perspective: 1000 }}
-      className="h-full"
     >
       <motion.div
         animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
+        transition={{ 
+          duration: 0.8, 
+          type: "spring", 
+          stiffness: 60,
+          damping: 15 
+        }}
         style={{ transformStyle: "preserve-3d" }}
-        className="relative h-full"
+        className="relative w-full h-full"
       >
         {/* Front Side */}
-        <motion.div
-          style={{ backfaceVisibility: "hidden" }}
-          className="absolute inset-0"
+        <div
+          className="absolute inset-0 w-full h-full"
+          style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
         >
-          <Card className="overflow-hidden h-full">
+          <Card className="h-full flex flex-col">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 {getIcon()}
@@ -70,49 +75,53 @@ export default function AccountCard({ account, onDelete }: AccountCardProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={onDelete}
-                className="h-8 w-8 text-muted-foreground hover:text-error"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
+                className="h-8 w-8 text-muted-foreground hover:text-destructive"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-1">
+            <CardContent className="flex-1 flex flex-col justify-center">
+              <div className="space-y-2">
                 <motion.div 
-                  className="text-2xl font-bold"
+                  className="text-3xl font-bold"
                   initial={{ scale: 0.8 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.1 }}
                 >
                   {format(parseFloat(account.balance))}
                 </motion.div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-sm text-muted-foreground">
                   {account.institution_name || 'No bank specified'}
                 </div>
-                <div className="text-xs text-muted-foreground capitalize">
+                <div className="inline-block px-2 py-1 rounded-md bg-surface text-xs capitalize">
                   {account.account_type.replace('_', ' ')}
                 </div>
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
         {/* Back Side */}
-        <motion.div
+        <div
+          className="absolute inset-0 w-full h-full"
           style={{ 
-            backfaceVisibility: "hidden",
-            rotateY: 180,
+            backfaceVisibility: "hidden", 
+            WebkitBackfaceVisibility: "hidden",
+            transform: "rotateY(180deg)"
           }}
-          className="absolute inset-0"
         >
-          <Card className="overflow-hidden h-full">
+          <Card className="h-full flex flex-col">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Recent Transactions</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1 overflow-hidden">
               <div className="space-y-2">
                 {recentTransactions && recentTransactions.length > 0 ? (
-                  recentTransactions.map((tx) => (
+                  recentTransactions.slice(0, 4).map((tx) => (
                     <div key={tx.id} className="flex items-center justify-between text-xs border-b border-border/50 pb-2 last:border-0">
                       <div className="flex items-center gap-2">
                         {tx.transaction_type === 'expense' ? (
@@ -120,7 +129,7 @@ export default function AccountCard({ account, onDelete }: AccountCardProps) {
                         ) : (
                           <ArrowUpRight className="w-3 h-3 text-success" />
                         )}
-                        <span className="truncate max-w-[100px]">{tx.description}</span>
+                        <span className="truncate max-w-[100px]">{tx.description || tx.category}</span>
                       </div>
                       <span className={tx.transaction_type === 'expense' ? 'text-destructive' : 'text-success'}>
                         {format(tx.amount)}
@@ -128,12 +137,14 @@ export default function AccountCard({ account, onDelete }: AccountCardProps) {
                     </div>
                   ))
                 ) : (
-                  <p className="text-xs text-muted-foreground">No recent transactions</p>
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-xs text-muted-foreground">No recent transactions</p>
+                  </div>
                 )}
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       </motion.div>
     </motion.div>
   );
