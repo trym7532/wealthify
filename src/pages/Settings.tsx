@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Moon, Sun, Globe } from "lucide-react";
 import { useCurrency, CURRENCIES } from "@/lib/currency";
 import { motion } from "framer-motion";
+import { CurrencyChangeDialog } from "@/components/settings/CurrencyChangeDialog";
 
 export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -17,6 +18,8 @@ export default function SettingsPage() {
     localStorage.getItem("theme") as "light" | "dark" || "dark"
   );
   const { currency, setCurrency } = useCurrency();
+  const [showCurrencyDialog, setShowCurrencyDialog] = useState(false);
+  const [pendingCurrency, setPendingCurrency] = useState<string | null>(null);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -24,6 +27,31 @@ export default function SettingsPage() {
     root.classList.add(theme);
     localStorage.setItem("theme", theme);
   }, [theme]);
+
+  const handleCurrencySelect = (newCurrency: string) => {
+    if (newCurrency !== currency) {
+      setPendingCurrency(newCurrency);
+      setShowCurrencyDialog(true);
+    }
+  };
+
+  const handleConvertValues = () => {
+    if (pendingCurrency) {
+      setCurrency(pendingCurrency);
+      toast.success(`Currency changed to ${pendingCurrency}. Values converted.`);
+    }
+    setShowCurrencyDialog(false);
+    setPendingCurrency(null);
+  };
+
+  const handleKeepValues = () => {
+    if (pendingCurrency) {
+      setCurrency(pendingCurrency);
+      toast.success(`Currency changed to ${pendingCurrency}. Values kept the same.`);
+    }
+    setShowCurrencyDialog(false);
+    setPendingCurrency(null);
+  };
 
   const handleSave = () => {
     toast.success("Settings saved successfully");
@@ -122,7 +150,7 @@ export default function SettingsPage() {
               <p className="text-sm text-muted-foreground mb-2">
                 All financial data will be converted to your selected currency
               </p>
-              <Select value={currency} onValueChange={setCurrency}>
+              <Select value={currency} onValueChange={handleCurrencySelect}>
                 <SelectTrigger id="currency">
                   <SelectValue placeholder="Select currency" />
                 </SelectTrigger>
@@ -173,6 +201,15 @@ export default function SettingsPage() {
           Save Settings
         </Button>
       </div>
+
+      <CurrencyChangeDialog
+        open={showCurrencyDialog}
+        onOpenChange={setShowCurrencyDialog}
+        fromCurrency={currency}
+        toCurrency={pendingCurrency || currency}
+        onConvert={handleConvertValues}
+        onKeepValues={handleKeepValues}
+      />
     </motion.div>
   );
 }
