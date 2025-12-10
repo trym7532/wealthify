@@ -79,19 +79,24 @@ export default function GoalCard({ goal }: GoalCardProps) {
           transition={{ duration: 0.3 }}
           onHoverStart={() => setIsFlipped(true)}
           onHoverEnd={() => setIsFlipped(false)}
+          className="h-[280px] cursor-pointer"
           style={{ perspective: 1000 }}
-          className="h-full"
         >
           <motion.div
             animate={{ rotateY: isFlipped ? 180 : 0 }}
-            transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
+            transition={{ 
+              duration: 0.8, 
+              type: "spring", 
+              stiffness: 60,
+              damping: 15 
+            }}
             style={{ transformStyle: "preserve-3d" }}
-            className="relative h-full"
+            className="relative w-full h-full"
           >
             {/* Front Side */}
-            <motion.div
-              style={{ backfaceVisibility: "hidden" }}
-              className="absolute inset-0"
+            <div
+              className="absolute inset-0 w-full h-full"
+              style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
             >
               <Card className="h-full">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -151,15 +156,16 @@ export default function GoalCard({ goal }: GoalCardProps) {
                   )}
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
 
             {/* Back Side */}
-            <motion.div
+            <div
+              className="absolute inset-0 w-full h-full"
               style={{ 
-                backfaceVisibility: "hidden",
-                rotateY: 180,
+                backfaceVisibility: "hidden", 
+                WebkitBackfaceVisibility: "hidden",
+                transform: "rotateY(180deg)"
               }}
-              className="absolute inset-0"
             >
               <Card className="h-full">
                 <CardHeader className="pb-3">
@@ -212,7 +218,7 @@ export default function GoalCard({ goal }: GoalCardProps) {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
           </motion.div>
         </motion.div>
       </InsightTooltip>
