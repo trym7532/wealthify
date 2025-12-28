@@ -9,6 +9,7 @@ import { Moon, Sun, Globe } from "lucide-react";
 import { useCurrency, CURRENCIES } from "@/lib/currency";
 import { motion } from "framer-motion";
 import { CurrencyChangeDialog } from "@/components/settings/CurrencyChangeDialog";
+import { DataExportSection } from "@/components/settings/DataExportSection";
 
 export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -180,6 +181,9 @@ export default function SettingsPage() {
             </div>
           </div>
         </Card>
+
+        {/* Data Export */}
+        <DataExportSection />
 
         {/* Privacy & Security */}
         <Card className="p-6">
