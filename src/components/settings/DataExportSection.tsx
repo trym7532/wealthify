@@ -4,20 +4,59 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Download, FileText, FileSpreadsheet, Loader2 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Download, FileText, FileSpreadsheet, Loader2, CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/lib/currency";
-import { format } from "date-fns";
+import { format, subMonths, subQuarters, subYears, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear } from "date-fns";
+import { cn } from "@/lib/utils";
 
 type ExportFormat = "csv" | "pdf";
 type DataType = "transactions" | "budgets" | "goals";
+type DateRangePreset = "all" | "last-month" | "last-quarter" | "last-year" | "custom";
 
 export function DataExportSection() {
   const [selectedData, setSelectedData] = useState<DataType[]>(["transactions"]);
   const [exportFormat, setExportFormat] = useState<ExportFormat>("csv");
   const [isExporting, setIsExporting] = useState(false);
+  const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>("all");
+  const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined);
+  const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined);
   const { currency, format: formatAmount } = useCurrency();
+
+  const getDateRange = (): { start: Date | null; end: Date | null } => {
+    const now = new Date();
+    
+    switch (dateRangePreset) {
+      case "last-month": {
+        const lastMonth = subMonths(now, 1);
+        return { start: startOfMonth(lastMonth), end: endOfMonth(lastMonth) };
+      }
+      case "last-quarter": {
+        const lastQuarter = subQuarters(now, 1);
+        return { start: startOfQuarter(lastQuarter), end: endOfQuarter(lastQuarter) };
+      }
+      case "last-year": {
+        const lastYear = subYears(now, 1);
+        return { start: startOfYear(lastYear), end: endOfYear(lastYear) };
+      }
+      case "custom":
+        return { start: customStartDate || null, end: customEndDate || null };
+      default:
+        return { start: null, end: null };
+    }
+  };
+
+  const getDateRangeLabel = (): string => {
+    const { start, end } = getDateRange();
+    if (!start && !end) return "All time";
+    if (start && end) return `${format(start, "MMM d, yyyy")} - ${format(end, "MMM d, yyyy")}`;
+    if (start) return `From ${format(start, "MMM d, yyyy")}`;
+    if (end) return `Until ${format(end, "MMM d, yyyy")}`;
+    return "All time";
+  };
 
   const toggleDataType = (type: DataType) => {
     setSelectedData((prev) =>
@@ -32,30 +71,46 @@ export function DataExportSection() {
     if (!user) throw new Error("Not authenticated");
 
     const results: Record<string, any[]> = {};
+    const { start, end } = getDateRange();
 
     if (selectedData.includes("transactions")) {
-      const { data, error } = await supabase
+      let query = supabase
         .from("transactions")
         .select("*")
         .order("transaction_date", { ascending: false });
+      
+      if (start) query = query.gte("transaction_date", format(start, "yyyy-MM-dd"));
+      if (end) query = query.lte("transaction_date", format(end, "yyyy-MM-dd"));
+      
+      const { data, error } = await query;
       if (error) throw error;
       results.transactions = data || [];
     }
 
     if (selectedData.includes("budgets")) {
-      const { data, error } = await supabase
+      let query = supabase
         .from("budgets")
         .select("*")
         .order("category", { ascending: true });
+      
+      if (start) query = query.gte("created_at", start.toISOString());
+      if (end) query = query.lte("created_at", end.toISOString());
+      
+      const { data, error } = await query;
       if (error) throw error;
       results.budgets = data || [];
     }
 
     if (selectedData.includes("goals")) {
-      const { data, error } = await supabase
+      let query = supabase
         .from("financial_goals")
         .select("*")
         .order("target_date", { ascending: true });
+      
+      if (start) query = query.gte("created_at", start.toISOString());
+      if (end) query = query.lte("created_at", end.toISOString());
+      
+      const { data, error } = await query;
       if (error) throw error;
       results.goals = data || [];
     }
@@ -107,7 +162,8 @@ export function DataExportSection() {
   };
 
   const generatePDFContent = (data: Record<string, any[]>) => {
-    // Generate HTML content for PDF
+    const dateRangeLabel = getDateRangeLabel();
+    
     let html = `
       <!DOCTYPE html>
       <html>
@@ -124,12 +180,14 @@ export function DataExportSection() {
           .amount-positive { color: #10b981; }
           .amount-negative { color: #ef4444; }
           .footer { margin-top: 40px; text-align: center; color: #6b7280; font-size: 12px; }
+          .date-range { background: #f3f4f6; padding: 10px 15px; border-radius: 6px; display: inline-block; margin-bottom: 10px; }
         </style>
       </head>
       <body>
         <h1>Wealthify Financial Report</h1>
         <p>Generated on ${format(new Date(), "MMMM dd, yyyy 'at' HH:mm")}</p>
         <p>Currency: ${currency}</p>
+        <div class="date-range"><strong>Date Range:</strong> ${dateRangeLabel}</div>
     `;
 
     if (data.transactions?.length) {
@@ -232,6 +290,11 @@ export function DataExportSection() {
       return;
     }
 
+    if (dateRangePreset === "custom" && !customStartDate && !customEndDate) {
+      toast.error("Please select at least one date for custom range");
+      return;
+    }
+
     setIsExporting(true);
     try {
       const data = await fetchData();
@@ -243,7 +306,6 @@ export function DataExportSection() {
         toast.success("CSV exported successfully");
       } else {
         const html = generatePDFContent(data);
-        // Open in new window for printing/saving as PDF
         const printWindow = window.open("", "_blank");
         if (printWindow) {
           printWindow.document.write(html);
@@ -252,7 +314,6 @@ export function DataExportSection() {
           setTimeout(() => printWindow.print(), 500);
           toast.success("PDF report opened - use Print dialog to save as PDF");
         } else {
-          // Fallback: download as HTML
           downloadFile(html, `wealthify-report-${timestamp}.html`, "text/html");
           toast.success("Report downloaded as HTML - open and print to save as PDF");
         }
@@ -311,6 +372,79 @@ export function DataExportSection() {
             </div>
           </div>
         </div>
+
+        <div className="space-y-2">
+          <Label>Date range</Label>
+          <Select value={dateRangePreset} onValueChange={(v) => setDateRangePreset(v as DateRangePreset)}>
+            <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All time</SelectItem>
+              <SelectItem value="last-month">Last month</SelectItem>
+              <SelectItem value="last-quarter">Last quarter</SelectItem>
+              <SelectItem value="last-year">Last year</SelectItem>
+              <SelectItem value="custom">Custom range</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {dateRangePreset === "custom" && (
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Start date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full sm:w-[160px] justify-start text-left font-normal",
+                      !customStartDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {customStartDate ? format(customStartDate, "MMM d, yyyy") : "Start date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={customStartDate}
+                    onSelect={setCustomStartDate}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">End date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full sm:w-[160px] justify-start text-left font-normal",
+                      !customEndDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {customEndDate ? format(customEndDate, "MMM d, yyyy") : "End date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={customEndDate}
+                    onSelect={setCustomEndDate}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+        )}
 
         <div className="space-y-2">
           <Label>Export format</Label>
