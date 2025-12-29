@@ -1,11 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
-import { Wallet, LayoutDashboard, LogOut, Sparkles, Menu, X, Settings, TrendingUp } from "lucide-react";
+import { Wallet, LayoutDashboard, LogOut, Sparkles, Menu, Settings, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import NotificationsWidget from "@/components/widgets/NotificationsWidget";
+import AchievementsWidget from "@/components/widgets/AchievementsWidget";
 
 export default function Navbar() {
   const location = useLocation();
@@ -100,13 +102,17 @@ export default function Navbar() {
           {user ? (
             <>
               <NavLinks />
-              <button 
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Logout</span>
-              </button>
+              <div className="flex items-center gap-1 ml-2 pl-4 border-l border-border">
+                <AchievementsWidget />
+                <NotificationsWidget />
+                <button 
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 px-4 py-2 ml-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
+                </button>
+              </div>
             </>
           ) : (
             <Link 
@@ -119,13 +125,16 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Navigation */}
-        <div className="flex md:hidden items-center gap-2">
+        <div className="flex md:hidden items-center gap-1">
           {user ? (
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-10 w-10">
-                  <Menu className="w-5 h-5" />
-                </Button>
+            <>
+              <AchievementsWidget />
+              <NotificationsWidget />
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-10 w-10">
+                    <Menu className="w-5 h-5" />
+                  </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[280px] p-0">
                 <div className="flex flex-col h-full">
@@ -154,6 +163,8 @@ export default function Navbar() {
                 </div>
               </SheetContent>
             </Sheet>
+            </>
+
           ) : (
             <Link 
               to="/login" 
