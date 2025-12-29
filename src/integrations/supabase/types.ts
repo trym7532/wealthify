@@ -316,6 +316,54 @@ export type Database = {
           },
         ]
       }
+      user_achievements: {
+        Row: {
+          achievement_name: string
+          achievement_type: string
+          category: string
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_completed: boolean | null
+          progress: number | null
+          shared_at: string | null
+          target: number | null
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_name: string
+          achievement_type: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_completed?: boolean | null
+          progress?: number | null
+          shared_at?: string | null
+          target?: number | null
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_name?: string
+          achievement_type?: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_completed?: boolean | null
+          progress?: number | null
+          shared_at?: string | null
+          target?: number | null
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
