@@ -8,6 +8,7 @@ import AnimatedBarChart from "@/components/landing/AnimatedBarChart";
 import FeatureCard from "@/components/landing/FeatureCard";
 import StatsCounter from "@/components/landing/StatsCounter";
 import TestimonialCard from "@/components/landing/TestimonialCard";
+import InteractiveDemo from "@/components/landing/InteractiveDemo";
 
 const features = [
   {
@@ -141,83 +142,8 @@ const Index = () => {
             </motion.div>
           </motion.div>
 
-          {/* Dashboard Preview Card */}
-          <motion.div 
-            className="relative"
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
-            <motion.div
-              className="card-surface bg-gradient-to-br from-card via-card to-secondary/30 backdrop-blur-xl relative overflow-hidden group"
-              whileHover={{ y: -10 }}
-              transition={{ type: "spring", stiffness: 300 }}
-              style={{
-                boxShadow: "0 0 50px rgba(16, 185, 129, 0.15), 0 20px 60px rgba(0, 0, 0, 0.3)",
-              }}
-            >
-              {/* Glowing border effect */}
-              <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                style={{
-                  background: "linear-gradient(135deg, rgba(16, 185, 129, 0.1), transparent, rgba(6, 182, 212, 0.1))",
-                  boxShadow: "inset 0 0 30px rgba(16, 185, 129, 0.1)",
-                }}
-              />
-
-              <div className="space-y-4 relative z-10">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold">Quick Preview</h3>
-                  <div className="flex gap-1.5">
-                    <motion.div 
-                      className="w-3 h-3 rounded-full bg-red-500"
-                      whileHover={{ scale: 1.2 }}
-                    />
-                    <motion.div 
-                      className="w-3 h-3 rounded-full bg-yellow-500"
-                      whileHover={{ scale: 1.2 }}
-                    />
-                    <motion.div 
-                      className="w-3 h-3 rounded-full bg-green-500"
-                      whileHover={{ scale: 1.2 }}
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-3 pt-4">
-                  {[
-                    { label: "Total Balance", value: "$12,450", color: "from-emerald-400 to-cyan-400" },
-                    { label: "Monthly Savings", value: "+$1,230", color: "from-green-400 to-emerald-400" },
-                    { label: "Investment Returns", value: "+15% ROI", color: "from-violet-400 to-pink-400" },
-                  ].map((item, i) => (
-                    <motion.div
-                      key={item.label}
-                      className="flex items-center justify-between p-3 rounded-lg bg-background/50 hover:bg-background/70 transition-colors"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.6 + i * 0.1 }}
-                      whileHover={{ x: 5 }}
-                    >
-                      <span className="text-muted-foreground">{item.label}</span>
-                      <span className={`text-xl font-bold bg-gradient-to-r ${item.color} bg-clip-text text-transparent`}>
-                        {item.value}
-                      </span>
-                    </motion.div>
-                  ))}
-                </div>
-
-                {/* Animated Bar Chart */}
-                <div className="pt-4 border-t border-border/50">
-                  <p className="text-sm text-muted-foreground mb-3">Monthly Spending Trend</p>
-                  <AnimatedBarChart />
-                </div>
-
-                <p className="text-sm text-muted-foreground pt-4">
-                  Your dashboard will show spending trends, budgets, and AI-powered prediction insights 
-                  to help you make smarter financial decisions.
-                </p>
-              </div>
-            </motion.div>
-          </motion.div>
+          {/* Interactive Demo */}
+          <InteractiveDemo />
         </div>
       </section>
 
