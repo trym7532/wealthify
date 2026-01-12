@@ -1,223 +1,128 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { 
-  TrendingDown, TrendingUp, AlertCircle, CheckCircle, 
-  Frown, Smile, PiggyBank, Wallet, Target, Brain,
-  BarChart3, Shield, Zap, Sparkles
+  Brain, BarChart3, TrendingUp, PieChart,
+  Sparkles, FileText, Bot, Lightbulb
 } from "lucide-react";
 
-interface StoryStage {
+interface TechFeature {
   title: string;
   description: string;
   icon: React.ElementType;
   iconColor: string;
-  bgGradient: string;
-  side: "left" | "right" | "center";
+  gradientFrom: string;
+  gradientTo: string;
 }
 
-const beforeStages: StoryStage[] = [
+const techFeatures: TechFeature[] = [
   {
-    title: "Scattered Finances",
-    description: "Bills everywhere, no clear picture of where money goes",
-    icon: AlertCircle,
-    iconColor: "text-red-400",
-    bgGradient: "from-red-500/10 to-transparent",
-    side: "left",
+    title: "AI Auto-Categorization",
+    description: "Our intelligent AI automatically categorizes every transaction, eliminating manual work and ensuring 99% accuracy",
+    icon: Brain,
+    iconColor: "text-violet-400",
+    gradientFrom: "from-violet-500/20",
+    gradientTo: "to-purple-500/10",
   },
   {
-    title: "Stress & Uncertainty",
-    description: "Constant worry about unexpected expenses and low savings",
-    icon: Frown,
-    iconColor: "text-orange-400",
-    bgGradient: "from-orange-500/10 to-transparent",
-    side: "right",
-  },
-  {
-    title: "Missed Opportunities",
-    description: "No visibility into spending patterns or investment potential",
-    icon: TrendingDown,
-    iconColor: "text-amber-400",
-    bgGradient: "from-amber-500/10 to-transparent",
-    side: "left",
-  },
-];
-
-const afterStages: StoryStage[] = [
-  {
-    title: "Crystal Clear Overview",
-    description: "Every transaction tracked, categorized, and visualized beautifully",
+    title: "Smart Charts & Tracking",
+    description: "Beautiful real-time visualizations that show exactly where your money flows with interactive insights",
     icon: BarChart3,
     iconColor: "text-cyan-400",
-    bgGradient: "from-cyan-500/10 to-transparent",
-    side: "right",
+    gradientFrom: "from-cyan-500/20",
+    gradientTo: "to-blue-500/10",
   },
   {
-    title: "Smart Savings",
-    description: "AI-powered insights help you save more without sacrificing lifestyle",
-    icon: PiggyBank,
-    iconColor: "text-emerald-400",
-    bgGradient: "from-emerald-500/10 to-transparent",
-    side: "left",
-  },
-  {
-    title: "Confident Investing",
-    description: "Data-driven recommendations to grow your wealth intelligently",
+    title: "AI Investment Suggestions",
+    description: "Get personalized investment recommendations powered by machine learning and market analysis",
     icon: TrendingUp,
-    iconColor: "text-violet-400",
-    bgGradient: "from-violet-500/10 to-transparent",
-    side: "right",
+    iconColor: "text-emerald-400",
+    gradientFrom: "from-emerald-500/20",
+    gradientTo: "to-green-500/10",
   },
   {
-    title: "Financial Peace",
-    description: "Full control, clear goals, and the confidence to achieve them",
-    icon: Smile,
+    title: "Auto Investment Breakdown",
+    description: "Instantly see your portfolio allocation with AI-generated insights on risk and diversification",
+    icon: PieChart,
     iconColor: "text-pink-400",
-    bgGradient: "from-pink-500/10 to-transparent",
-    side: "center",
+    gradientFrom: "from-pink-500/20",
+    gradientTo: "to-rose-500/10",
+  },
+  {
+    title: "Intelligent Reports",
+    description: "Weekly and monthly AI-generated financial reports with actionable recommendations",
+    icon: FileText,
+    iconColor: "text-amber-400",
+    gradientFrom: "from-amber-500/20",
+    gradientTo: "to-orange-500/10",
   },
 ];
 
-const StoryCard = ({ 
-  stage, 
-  index, 
-  isBefore 
+const FeatureCard = ({ 
+  feature, 
+  index 
 }: { 
-  stage: StoryStage; 
-  index: number; 
-  isBefore: boolean;
+  feature: TechFeature; 
+  index: number;
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: cardRef,
-    offset: ["start end", "center center"],
+    offset: ["start 0.9", "start 0.3"],
   });
 
-  const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0, 1, 1]);
-  const x = useTransform(
-    scrollYProgress, 
-    [0, 0.5, 1], 
-    [stage.side === "left" ? -100 : stage.side === "right" ? 100 : 0, 0, 0]
-  );
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.8, 1, 1]);
+  const opacity = useTransform(scrollYProgress, [0, 1], [0, 1]);
+  const y = useTransform(scrollYProgress, [0, 1], [60, 0]);
+  const scale = useTransform(scrollYProgress, [0, 1], [0.95, 1]);
 
-  const Icon = stage.icon;
+  const Icon = feature.icon;
+  const isEven = index % 2 === 0;
 
   return (
     <motion.div
       ref={cardRef}
-      className={`flex items-center gap-6 my-16 ${
-        stage.side === "left" ? "justify-start" : 
-        stage.side === "right" ? "justify-end" : "justify-center"
-      }`}
-      style={{ opacity, x, scale }}
+      className={`flex items-center gap-8 mb-24 ${isEven ? "md:flex-row" : "md:flex-row-reverse"}`}
+      style={{ opacity, y, scale }}
     >
+      {/* Icon Section */}
       <motion.div
-        className={`relative p-8 rounded-3xl bg-gradient-to-br ${stage.bgGradient} backdrop-blur-sm border border-white/10 max-w-md
-          ${isBefore ? "shadow-[0_0_40px_rgba(239,68,68,0.1)]" : "shadow-[0_0_40px_rgba(16,185,129,0.1)]"}`}
-        whileHover={{ scale: 1.02 }}
-        transition={{ type: "spring", stiffness: 300 }}
+        className={`flex-shrink-0 w-32 h-32 md:w-40 md:h-40 rounded-3xl bg-gradient-to-br ${feature.gradientFrom} ${feature.gradientTo} backdrop-blur-sm border border-white/10 flex items-center justify-center`}
+        whileHover={{ scale: 1.05, rotate: 3 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
       >
         <motion.div
-          className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 ${
-            isBefore 
-              ? "bg-gradient-to-br from-red-500/20 to-orange-500/20" 
-              : "bg-gradient-to-br from-emerald-500/20 to-cyan-500/20"
-          }`}
           animate={{ 
-            rotate: [0, 5, -5, 0],
-            scale: [1, 1.05, 1],
+            y: [0, -8, 0],
           }}
           transition={{ 
-            duration: 4, 
+            duration: 3, 
             repeat: Infinity, 
-            delay: index * 0.5 
+            ease: "easeInOut",
           }}
         >
-          <Icon className={`w-8 h-8 ${stage.iconColor}`} />
+          <Icon className={`w-16 h-16 md:w-20 md:h-20 ${feature.iconColor}`} strokeWidth={1.5} />
+        </motion.div>
+      </motion.div>
+
+      {/* Content Section */}
+      <div className={`flex-1 ${isEven ? "md:text-left" : "md:text-right"}`}>
+        <motion.div
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4"
+          whileHover={{ scale: 1.02 }}
+        >
+          <Bot className="w-4 h-4 text-primary" />
+          <span className="text-sm font-medium text-primary">AI Powered</span>
         </motion.div>
         
-        <h3 className="text-2xl font-bold mb-2">{stage.title}</h3>
-        <p className="text-muted-foreground text-lg">{stage.description}</p>
-
-        {/* Floating decorative elements */}
-        <motion.div
-          className={`absolute -top-2 -right-2 w-6 h-6 rounded-full ${
-            isBefore ? "bg-red-400/30" : "bg-emerald-400/30"
-          }`}
-          animate={{ 
-            y: [0, -10, 0],
-            opacity: [0.3, 0.6, 0.3],
-          }}
-          transition={{ duration: 3, repeat: Infinity }}
-        />
-      </motion.div>
-    </motion.div>
-  );
-};
-
-const TransitionDivider = () => {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
-
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0, 1, 1]);
-  const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0, 1, 1]);
-
-  return (
-    <motion.div 
-      ref={ref}
-      className="relative py-24 flex flex-col items-center justify-center"
-      style={{ opacity }}
-    >
-      <motion.div
-        className="absolute inset-0 flex items-center justify-center"
-        style={{ scale }}
-      >
-        <div className="w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-      </motion.div>
-      
-      <motion.div
-        className="relative z-10 bg-background px-8 py-6 rounded-full border-2 border-primary/30"
-        animate={{ 
-          boxShadow: [
-            "0 0 30px rgba(16, 185, 129, 0.2)",
-            "0 0 60px rgba(16, 185, 129, 0.4)",
-            "0 0 30px rgba(16, 185, 129, 0.2)",
-          ],
-        }}
-        transition={{ duration: 2, repeat: Infinity }}
-      >
-        <div className="flex items-center gap-3">
-          <Sparkles className="w-6 h-6 text-primary" />
-          <span className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-            Then Wealthify Happens
-          </span>
-          <Sparkles className="w-6 h-6 text-primary" />
-        </div>
-      </motion.div>
-
-      {/* Animated particles around transition */}
-      {[...Array(8)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-2 h-2 rounded-full bg-primary/40"
-          style={{
-            left: `${50 + Math.cos(i * 45 * Math.PI / 180) * 20}%`,
-            top: `${50 + Math.sin(i * 45 * Math.PI / 180) * 20}%`,
-          }}
-          animate={{
-            scale: [0, 1, 0],
-            opacity: [0, 1, 0],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            delay: i * 0.2,
-          }}
-        />
-      ))}
+        <h3 className={`text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r ${
+          isEven ? "from-white to-white/70" : "from-white/70 to-white"
+        } bg-clip-text text-transparent`}>
+          {feature.title}
+        </h3>
+        
+        <p className="text-lg text-muted-foreground leading-relaxed max-w-xl">
+          {feature.description}
+        </p>
+      </div>
     </motion.div>
   );
 };
@@ -232,56 +137,66 @@ export const ScrollStorySection = () => {
   const progressBarWidth = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   return (
-    <section ref={containerRef} className="relative py-20">
+    <section ref={containerRef} className="relative py-20 px-4 max-w-6xl mx-auto">
       {/* Progress indicator */}
-      <div className="fixed top-0 left-0 right-0 h-1 bg-muted z-50">
+      <div className="fixed top-0 left-0 right-0 h-1 bg-muted/30 z-50">
         <motion.div
-          className="h-full bg-gradient-to-r from-red-400 via-primary to-violet-400"
+          className="h-full bg-gradient-to-r from-violet-500 via-primary to-pink-500"
           style={{ width: progressBarWidth }}
         />
       </div>
 
-      {/* Vertical timeline line */}
-      <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-red-400/30 via-primary/30 to-violet-400/30 transform -translate-x-1/2" />
-
-      {/* Before Section Header */}
+      {/* Section Header */}
       <motion.div
-        className="text-center mb-16"
+        className="text-center mb-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
       >
-        <h2 className="text-4xl md:text-5xl font-bold mb-4">
-          <span className="text-red-400">Before</span> Wealthify
+        <motion.div
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-violet-500/10 to-cyan-500/10 border border-white/10 mb-6"
+          whileHover={{ scale: 1.02 }}
+        >
+          <Sparkles className="w-5 h-5 text-primary" />
+          <span className="text-sm font-semibold bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
+            Powered by Advanced AI
+          </span>
+        </motion.div>
+        
+        <h2 className="text-4xl md:text-6xl font-bold mb-6">
+          <span className="bg-gradient-to-r from-white via-white to-white/60 bg-clip-text text-transparent">
+            How Our Technology
+          </span>
+          <br />
+          <span className="bg-gradient-to-r from-emerald-400 via-cyan-400 to-violet-400 bg-clip-text text-transparent">
+            Secures Your Future
+          </span>
         </h2>
-        <p className="text-xl text-muted-foreground">The struggle was real...</p>
+        
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          Experience the power of artificial intelligence working for your financial well-being
+        </p>
       </motion.div>
 
-      {/* Before Stages */}
-      {beforeStages.map((stage, index) => (
-        <StoryCard key={stage.title} stage={stage} index={index} isBefore={true} />
+      {/* Feature Cards */}
+      {techFeatures.map((feature, index) => (
+        <FeatureCard key={feature.title} feature={feature} index={index} />
       ))}
 
-      {/* Transition Divider */}
-      <TransitionDivider />
-
-      {/* After Section Header */}
+      {/* Bottom Glow */}
       <motion.div
-        className="text-center mb-16"
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-      >
-        <h2 className="text-4xl md:text-5xl font-bold mb-4">
-          <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">After</span> Wealthify
-        </h2>
-        <p className="text-xl text-muted-foreground">Your financial transformation</p>
-      </motion.div>
-
-      {/* After Stages */}
-      {afterStages.map((stage, index) => (
-        <StoryCard key={stage.title} stage={stage} index={index} isBefore={false} />
-      ))}
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-to-t from-primary/20 to-transparent rounded-full blur-3xl pointer-events-none"
+        animate={{
+          opacity: [0.3, 0.5, 0.3],
+          scale: [1, 1.1, 1],
+        }}
+        transition={{
+          duration: 5,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      />
     </section>
   );
 };
