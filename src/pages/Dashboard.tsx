@@ -10,6 +10,8 @@ import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useCurrency } from "@/lib/currency";
 import { motion } from "framer-motion";
+import { FloatingIcons } from "@/components/ui/FloatingIcons";
+import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 
 export default function Dashboard() {
   const [showAllBudgets, setShowAllBudgets] = useState(false);
@@ -245,8 +247,11 @@ export default function Dashboard() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="space-y-6 page-transition relative"
+      className="space-y-6 page-transition relative min-h-screen"
     >
+        {/* Floating Icons Background */}
+        <FloatingIcons variant="subtle" />
+        
         {/* Decorative background elements */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -z-10" />
         <div className="absolute bottom-0 left-0 w-72 h-72 bg-accent/5 rounded-full blur-3xl -z-10" />
@@ -279,12 +284,16 @@ export default function Dashboard() {
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-muted-foreground text-sm">Total Balance</span>
-                <Wallet className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                <motion.div whileHover={{ scale: 1.2, rotate: 10 }} transition={{ type: "spring", stiffness: 300 }}>
+                  <Wallet className="w-5 h-5 text-primary" />
+                </motion.div>
               </div>
-              <div className="text-2xl font-bold">{format(totalBalance)}</div>
+              <div className="text-2xl font-bold">
+                <AnimatedCounter value={totalBalance} prefix="$" decimals={2} duration={1.5} />
+              </div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3" />
-                {accounts?.length || 0} accounts
+                <AnimatedCounter value={accounts?.length || 0} suffix=" accounts" duration={1} />
               </div>
             </div>
             </div>
@@ -305,12 +314,16 @@ export default function Dashboard() {
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-muted-foreground text-sm">Monthly Spend</span>
-                <CreditCard className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                <motion.div whileHover={{ scale: 1.2, rotate: -10 }} transition={{ type: "spring", stiffness: 300 }}>
+                  <CreditCard className="w-5 h-5 text-primary" />
+                </motion.div>
               </div>
-              <div className="text-2xl font-bold">{format(monthlySpend)}</div>
+              <div className="text-2xl font-bold">
+                <AnimatedCounter value={monthlySpend} prefix="$" decimals={2} duration={1.5} />
+              </div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <TrendingDown className="w-3 h-3" />
-                {Object.keys(spendByCategory).length} categories
+                <AnimatedCounter value={Object.keys(spendByCategory).length} suffix=" categories" duration={1} />
               </div>
             </div>
             </div>
@@ -331,12 +344,16 @@ export default function Dashboard() {
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-muted-foreground text-sm">Savings</span>
-                <PiggyBank className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                <motion.div whileHover={{ scale: 1.2, y: -3 }} transition={{ type: "spring", stiffness: 300 }}>
+                  <PiggyBank className="w-5 h-5 text-primary" />
+                </motion.div>
               </div>
-              <div className="text-2xl font-bold">{format(totalSavings)}</div>
+              <div className="text-2xl font-bold">
+                <AnimatedCounter value={totalSavings} prefix="$" decimals={2} duration={1.5} />
+              </div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3" />
-                {savingsAccounts.length} accounts
+                <AnimatedCounter value={savingsAccounts.length} suffix=" accounts" duration={1} />
               </div>
             </div>
             </div>
@@ -357,12 +374,16 @@ export default function Dashboard() {
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-muted-foreground text-sm">Investments</span>
-                <TrendingUp className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                <motion.div whileHover={{ scale: 1.2, rotate: 15 }} transition={{ type: "spring", stiffness: 300 }}>
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                </motion.div>
               </div>
-              <div className="text-2xl font-bold">{format(totalInvestments)}</div>
+              <div className="text-2xl font-bold">
+                <AnimatedCounter value={totalInvestments} prefix="$" decimals={2} duration={1.5} />
+              </div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3" />
-                {investmentAccounts.length} accounts
+                <AnimatedCounter value={investmentAccounts.length} suffix=" accounts" duration={1} />
               </div>
             </div>
             </div>
