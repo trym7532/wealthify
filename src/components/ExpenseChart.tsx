@@ -69,7 +69,7 @@ export default function ExpenseChart({ data = [] }: ExpenseChartProps) {
         data: values,
         fill: true,
         tension: 0.45,
-        cubicInterpolationMode: 'monotone',
+        cubicInterpolationMode: 'monotone' as const,
 
         // Vibrant animated gradient
         backgroundColor: (context: any) => {
